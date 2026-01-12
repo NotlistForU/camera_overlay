@@ -10,7 +10,7 @@ class FotoMissao {
 
   static Future<String> nome() async {
     final db = await Create.database;
-    final missao = await missaoAtiva(db);
+    final missao = await isAtiva(db);
     final nome = missao['nome'] as String;
     final num = await Update.contador();
     return FotoMissao.rotulo(nome, num);

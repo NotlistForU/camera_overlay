@@ -26,7 +26,7 @@ class Update {
   static Future<int> contador() async {
     final db = await Create.database;
     return await db.transaction((tsc) async {
-      final missao = await missaoAtiva(db);
+      final missao = await isAtiva(db);
       final missaoid = missao['id'] as int;
       final contador = missao['contador'] as int;
       final num = contador + 1;
