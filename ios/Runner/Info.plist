@@ -3,13 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Este app usa a câmera para tirar fotos</string>
+	<string>Usamos a câmera para registrar fotos da missão.</string>
 
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Este app salva fotos na galeria</string>
+	<string>Salvamos fotos da missão na galeria do dispositivo.</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Usamos sua localização para registrar a posição das fotos.</string>
 
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Este app acessa fotos para exibição e compartilhamento</string>
+	<string>Acessamos fotos para exibição, organização e compartilhamento.</string>
 	
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

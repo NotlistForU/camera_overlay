@@ -1,20 +1,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 📸 Câmera -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- 📍 Localização -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- 🖼️ Galeria -->
+    <!-- Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+    <!-- Android 14+ (opcional, recomendado) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+
+    <!-- Hardware -->
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
+    <uses-feature android:name="android.hardware.camera.autofocus"/>
+    
     <application
         android:label="sipam_foto"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
-        <uses-permission android:name="android.permission.CAMERA"/>
-
-        <!-- Android 13+ -->
-        <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-
-        <!-- Android <=12 -->
-        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-
-        <uses-feature android:name="android.hardware.camera" android:required="true"/>
-        <uses-feature android:name="android.hardware.camera.autofocus"/>
-
+        
 
 
         <activity
