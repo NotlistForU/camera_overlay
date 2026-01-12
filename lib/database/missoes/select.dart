@@ -14,4 +14,28 @@ class Select {
       ativa: true,
     );
   }
+
+  static Future<List<Missao>> todasMissoes() async {
+    final db = await Create.database;
+    final result = await db.query('missoes', orderBy: 'data_criacao DESC');
+    return result.map((e) {
+      return Missao(
+        id: e['id'] as int,
+        contador: e['contador'] as int,
+        data: DateTime.fromMillisecondsSinceEpoch(e['data_criacao'] as int),
+        nome: e['nome'] as String,
+        ativa: (e['ativa'] as int) == 1,
+      );
+    }).toList();
+  }
+
+  static Future<bool> existeMissao(String nome) async {
+    final db = await Create.database;
+    final result = await db.query(
+      'missoes',
+      where: 'LOWER(nome) = ?',
+      whereArgs: [nome.toLowerCase()],
+    );
+    return result.isEmpty;
+  }
 }
