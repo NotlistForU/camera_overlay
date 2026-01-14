@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'view/missao.dart';
+import 'package:sipam_foto/view/missao/missao.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +10,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(debugShowCheckedModeBanner: false, home: Missao());
+    return MaterialApp(
+      debugShowCheckedModeBanner: false, // remove a faixa "debug"
+      title: 'Meu App',
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color.fromARGB(
+          255,
+          25,
+          35,
+          55,
+        ), // fundo azul escuro
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+          titleLarge: TextStyle(color: Colors.white),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black87,
+          foregroundColor: Colors.white, // cor do texto/ícones da AppBar
+        ),
+      ),
+      home: const Missao(), // sua tela inicial
+    );
   }
 }

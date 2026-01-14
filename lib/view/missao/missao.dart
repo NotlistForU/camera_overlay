@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sipam_foto/database/missoes/update.dart' as update;
 import 'package:sipam_foto/database/missoes/insert.dart' as insert;
 import 'package:sipam_foto/database/missoes/select.dart' as select;
 import 'package:sipam_foto/model/missao.dart' as model;
+import 'package:sipam_foto/view/missao/lista.dart';
 
 class Missao extends StatefulWidget {
   const Missao({super.key});
@@ -20,7 +22,7 @@ class _MissaoState extends State<Missao> {
   }
 
   void _reloadMissoes() {
-    missoesFuture = select.Select.todasMissoes();
+    missoesFuture = select.Missao.todasMissoes();
   }
 
   void _openModal() {
@@ -71,7 +73,7 @@ class _MissaoState extends State<Missao> {
               onPressed: () async {
                 final nome = textC.text.trim();
                 if (nome.isEmpty) return;
-                final existe = await select.Select.existeMissao(nome);
+                final existe = await select.Missao.existeMissao(nome);
                 if (!c.mounted) return;
                 if (existe) {
                   ScaffoldMessenger.of(c).showSnackBar(
@@ -81,7 +83,7 @@ class _MissaoState extends State<Missao> {
                   );
                   return;
                 }
-                await insert.Insert.missao(nome: nome, ativa: ativarAgora);
+                await insert.Missao.values(nome: nome, ativa: ativarAgora);
                 if (!c.mounted) return;
                 Navigator.pop(c);
                 if (ativarAgora) {
@@ -116,14 +118,27 @@ class _MissaoState extends State<Missao> {
           }
           final missoes = snapshot.data ?? [];
           if (missoes.isEmpty) {
-            return const Center(child: Text('Nenhuma missão criada'));
+            return const Center(
+              child: Text(
+                'Nenhuma missão criada',
+                style: const TextStyle(color: Colors.white),
+              ),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(8),
             itemCount: missoes.length,
             itemBuilder: (c, index) {
               final missao = missoes[index];
-              // return MissaoTile()
+              return Lista(
+                nome: missao.nome,
+                ativa: missao.ativa,
+                onTap: () async {
+                  await update.Missao.ativar(missao);
+                  if (!c.mounted) return;
+                  Navigator.pop(c, true);
+                },
+              );
             },
           );
         },

@@ -1,6 +1,6 @@
 import 'package:sipam_foto/database/create.dart';
 import 'package:sipam_foto/database/util/queries.dart';
-import '../missoes/update.dart';
+import 'package:sipam_foto/database/missoes/update.dart' as update;
 
 class FotoMissao {
   static String rotulo(String nome, int num) {
@@ -12,7 +12,7 @@ class FotoMissao {
     final db = await Create.database;
     final missao = await isAtiva(db);
     final nome = missao['nome'] as String;
-    final num = await Update.contador();
+    final num = await update.Missao.contador();
     return FotoMissao.rotulo(nome, num);
   }
 }

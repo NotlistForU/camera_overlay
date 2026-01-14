@@ -7,7 +7,7 @@ import 'package:sipam_foto/view/camera/widget/bottom_bar.dart' as widgets;
 import 'package:sipam_foto/view/camera/permissoes.dart' as permissao;
 import 'package:sipam_foto/view/camera/widget/preview.dart' as widgets;
 import 'package:sipam_foto/model/missao.dart' as model;
-import 'package:sipam_foto/view/missao.dart' as page;
+import 'package:sipam_foto/view/missao/missao.dart' as page;
 import 'package:sipam_foto/database/missoes/select.dart' as select;
 
 class Camera extends StatefulWidget {
@@ -62,7 +62,7 @@ class _CameraState extends State<Camera> {
       dialogPermissaoNegada();
     }
 
-    final missao = await select.Select.missaoAtiva();
+    final missao = await select.Missao.missaoAtiva();
 
     if (missao == null) {
       await _checkMissaoAtiva();
@@ -70,7 +70,7 @@ class _CameraState extends State<Camera> {
   }
 
   Future<void> _checkMissaoAtiva() async {
-    final missao = await select.Select.missaoAtiva();
+    final missao = await select.Missao.missaoAtiva();
     if (!mounted || missao == null) return;
 
     showDialog(
@@ -94,7 +94,7 @@ class _CameraState extends State<Camera> {
   }
 
   Future<void> _loadContext() async {
-    final missao = await select.Select.missaoAtiva();
+    final missao = await select.Missao.missaoAtiva();
     if (missao == null) return;
     model.Missao missaoAtiva = missao;
     contador = missao.contador;

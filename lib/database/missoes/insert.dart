@@ -1,7 +1,7 @@
 import '../create.dart';
 
-class Insert {
-  static Future<void> missao({
+class Missao {
+  static Future<void> values({
     required String nome,
     required bool ativa,
   }) async {

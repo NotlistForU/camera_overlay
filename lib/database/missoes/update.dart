@@ -3,7 +3,7 @@ import 'package:sipam_foto/database/util/queries.dart';
 import 'package:sipam_foto/model/missao.dart' as model;
 
 // MISSOES
-class Update {
+class Missao {
   // POR ENQUANTO NAO SE FAZ USO DELA TALVEZ mais tarde com um botao pra desativar todas sem ativar nenhuma.
   // static Future<void> desativarTodasMissoes() async {
   //   final db = await Create.database;
