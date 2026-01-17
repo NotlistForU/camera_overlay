@@ -26,6 +26,7 @@ class MiniMap extends StatelessWidget {
           children: [
             TileLayer(
               urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+              userAgentPackageName: 'com.sipam_foto.app',
             ),
             MarkerLayer(
               markers: [

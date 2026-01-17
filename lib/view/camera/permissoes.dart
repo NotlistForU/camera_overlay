@@ -27,7 +27,7 @@ Future<bool> requestCameraAndLocationPermissions() async {
     }
   }
 
-  // 3. opcional: checar se o serviço de localização está ativo (Geolocator)
+  // 3. checar se o serviço de localização está ativo (Geolocator)
   final serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     // serviço de localização desativado no dispositivo

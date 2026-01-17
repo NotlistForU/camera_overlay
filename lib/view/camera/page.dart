@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -5,8 +6,14 @@ import 'package:camera/camera.dart';
 import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:sipam_foto/database/localizacao/service.dart';
 
 import 'package:sipam_foto/view/camera/enum.dart';
+
+//IMPORT model
+import 'package:sipam_foto/model/missao.dart' as model;
+import 'package:sipam_foto/model/localizacao.dart' as model;
+
 // IMPORT cases
 import 'package:sipam_foto/view/camera/cases/loading.dart' as cases;
 import 'package:sipam_foto/view/camera/cases/permissao_negada.dart' as cases;
@@ -20,6 +27,9 @@ import 'package:sipam_foto/view/camera/widget/bottom_bar.dart' as widgets;
 
 import 'package:sipam_foto/view/camera/permissoes.dart' as permissao;
 import 'package:sipam_foto/view/missao/missao.dart' as page;
+
+// IMPORT database
+import 'package:sipam_foto/database/missoes/update.dart' as update;
 import 'package:sipam_foto/database/missoes/select.dart' as select;
 
 class Camera extends StatefulWidget {
@@ -40,8 +50,10 @@ class _CameraState extends State<Camera> {
   File? _fotoAtual;
   final GlobalKey _repaintKey = GlobalKey();
   bool _tirandoFoto = false;
+  model.Localizacao? localizacaoAtual;
 
   static const double height = widgets.BottomBar.height;
+  late final StreamSubscription<model.Localizacao> sub;
 
   @override
   void initState() {
@@ -51,6 +63,7 @@ class _CameraState extends State<Camera> {
 
   @override
   void dispose() {
+    sub.cancel();
     _controller?.dispose();
     super.dispose();
   }
@@ -71,6 +84,11 @@ class _CameraState extends State<Camera> {
 
   Future<void> salvarFotoFinal() async {
     try {
+      final missao = await select.Missao.missaoAtiva();
+      if (missao == null) {
+        throw Exception('Nenhuma missão ativa, foto não foi salva');
+      }
+
       final boundary =
           _repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
@@ -83,24 +101,23 @@ class _CameraState extends State<Camera> {
       if (!permissao.isAuth) {
         throw Exception('Permissão de galeria negada');
       }
-      final missao = select.Missao.missaoAtiva();
-      // final AssetPathEntity albumSipam = await _getOrCreateAlbum('SIPAM');
-      // final AssetPathEntity subAlbum = await _getOrCreateAlbum(
-      //   '${missao.}'
-      // )
 
-      final dir = Directory('/storage/emulated/0/Picures/missao/missao_01');
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-      final fileName = 'foto_${DateTime.now().millisecondsSinceEpoch}.png';
+      final albumNome = 'Sipam-${missao.nome}';
+      final num = missao.contador + 1;
+      final contadorAtual = num.toString().padLeft(2, '0');
+      final arquivoNome = '${missao.nome}_$contadorAtual';
 
-      final file = File('${dir.path}/$fileName');
-      await file.writeAsBytes(pngBytes);
+      await PhotoManager.editor.saveImage(
+        pngBytes,
+        filename: '$arquivoNome.png',
+        title: arquivoNome,
+        relativePath: 'Pictures/$albumNome',
+      );
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();
       }
+      await update.Missao.contador();
       setState(() {
         _fotoTemporaria = null;
       });
@@ -133,6 +150,11 @@ class _CameraState extends State<Camera> {
       await _initCamera();
 
       _setState(CameraStatus.pronta);
+      sub = emTempoReal().listen((loc) {
+        setState(() {
+          localizacaoAtual = loc;
+        });
+      });
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
@@ -184,6 +206,7 @@ class _CameraState extends State<Camera> {
           onFoto: _onFoto,
           onMaps: _onMaps,
           abrirMaps: _abrirMaps,
+          localizacaoAtual: localizacaoAtual,
         );
       case CameraStatus.erro:
         return cases.erro(mensagem: _erro ?? 'Erro desconhecido');
