@@ -5,6 +5,7 @@ import 'package:sipam_foto/view/galeria/galeria.dart';
 
 class BottomBar extends StatelessWidget {
   final File? fotoTemporaria;
+  final bool tirandoFoto;
   final VoidCallback onFoto;
   final VoidCallback onMaps;
   final bool abrirMaps;
@@ -15,6 +16,7 @@ class BottomBar extends StatelessWidget {
     required this.onFoto,
     required this.onMaps,
     required this.abrirMaps,
+    required this.tirandoFoto,
   });
 
   @override
@@ -66,14 +68,16 @@ class BottomBar extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 3),
               ),
               child: Center(
-                child: Container(
-                  width: 54,
-                  height: 54,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                ),
+                child: tirandoFoto
+                    ? const CircularProgressIndicator(strokeWidth: 3)
+                    : Container(
+                        width: 54,
+                        height: 54,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ),

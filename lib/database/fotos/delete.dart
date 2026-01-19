@@ -14,7 +14,7 @@ class Delete {
     final batch = db.batch();
     for (final foto in fotos) {
       // apaga arquivo físico
-      final file = File(foto.path);
+      final file = File(foto.assetId);
       if (await file.exists()) {
         await file.delete();
       }

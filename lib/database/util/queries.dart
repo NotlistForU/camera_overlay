@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
-Future<Map<String, Object?>> isAtiva(Database db) async {
+Future<Map<String, Object?>> isAtiva(DatabaseExecutor db) async {
   final result = await db.query(
     'missoes',
     where: 'ativa = ?',

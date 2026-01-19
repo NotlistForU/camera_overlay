@@ -9,6 +9,7 @@ import 'package:sipam_foto/view/camera/widget/preview.dart' as widgets;
 const double height = widgets.BottomBar.height;
 Widget cameraPronta({
   required bool feedback,
+  required bool tirandoFoto,
   required File? fotoTemporaria,
   required CameraController controller,
   required GlobalKey repaintKey,
@@ -43,6 +44,7 @@ Widget cameraPronta({
         Align(
           alignment: Alignment.bottomCenter,
           child: widgets.BottomBar(
+            tirandoFoto: tirandoFoto,
             fotoTemporaria: fotoTemporaria,
             onFoto: onFoto,
             onMaps: onMaps,

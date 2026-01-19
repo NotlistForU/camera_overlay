@@ -44,7 +44,7 @@ class Missao {
   static Future<int> contador() async {
     final db = await Create.database;
     return await db.transaction((tsc) async {
-      final missao = await isAtiva(db);
+      final missao = await isAtiva(tsc);
       final missaoid = missao['id'] as int;
       final contador = missao['contador'] as int;
       final num = contador + 1;

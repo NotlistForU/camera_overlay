@@ -31,6 +31,7 @@ import 'package:sipam_foto/view/missao/missao.dart' as page;
 // IMPORT database
 import 'package:sipam_foto/database/missoes/update.dart' as update;
 import 'package:sipam_foto/database/missoes/select.dart' as select;
+import 'package:sipam_foto/database/fotos/insert.dart' as insert;
 
 class Camera extends StatefulWidget {
   const Camera({super.key});
@@ -82,9 +83,16 @@ class _CameraState extends State<Camera> {
     });
   }
 
+  // flag
+  bool _tirandoFoto = false;
+  void getTirandofoto() => _tirandoFoto;
   Future<void> _onFoto() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    if (_tirandoFoto) return;
     try {
-      if (_controller == null || !_controller!.value.isInitialized) return;
+      setState(() {
+        _tirandoFoto = true;
+      });
       final XFile xfile = await _controller!.takePicture();
       final File file = File(xfile.path);
       setState(() {
@@ -92,6 +100,9 @@ class _CameraState extends State<Camera> {
         triggerFeedback();
       });
       await salvarFotoFinal();
+      setState(() {
+        _tirandoFoto = false;
+      });
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
@@ -123,15 +134,28 @@ class _CameraState extends State<Camera> {
       final contadorAtual = num.toString().padLeft(2, '0');
       final arquivoNome = '${missao.nome}_$contadorAtual';
 
-      await PhotoManager.editor.saveImage(
+      final AssetEntity? asset = await PhotoManager.editor.saveImage(
         pngBytes,
         filename: '$arquivoNome.png',
         title: arquivoNome,
         relativePath: 'Pictures/$albumNome',
       );
+      if (asset != null) {
+        await insert.Insert.foto(
+          missaoid: missao.id,
+          nome: arquivoNome,
+          asset_id: asset.id,
+          latitude: localizacaoAtual?.latitude,
+          longitude: localizacaoAtual?.longitude,
+          altitude: localizacaoAtual?.altitude,
+        );
+        debugPrint('Foto salva no banco de dados');
+      }
+      debugPrint('Tirando foto = $_tirandoFoto');
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();
+        debugPrint('Foto temporaria deletada');
       }
       await update.Missao.contador();
       setState(() {
@@ -216,6 +240,7 @@ class _CameraState extends State<Camera> {
         return cases.loading(texto: 'Inicializando câmera...');
       case CameraStatus.pronta:
         return cases.cameraPronta(
+          tirandoFoto: _tirandoFoto,
           feedback: feedback,
           fotoTemporaria: _fotoTemporaria,
           controller: _controller!,

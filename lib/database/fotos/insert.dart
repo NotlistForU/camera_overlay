@@ -4,7 +4,7 @@ class Insert {
   static Future<void> foto({
     required int missaoid,
     required String nome,
-    required String path,
+    required String asset_id,
     double? latitude,
     double? longitude,
     double? altitude,
@@ -13,7 +13,7 @@ class Insert {
     await db.insert('fotos', {
       'missao_id': missaoid,
       'nome': nome,
-      'path': path,
+      'asset_id': asset_id,
       'latitude': latitude,
       'longitude': longitude,
       'altitude': altitude,

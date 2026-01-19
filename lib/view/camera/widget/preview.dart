@@ -35,7 +35,7 @@ class Preview extends StatelessWidget {
               right: 10,
               child: widgets.MiniMap(lat: lat!, lng: lng!),
             ),
-          Positioned(left: 0, bottom: 0, child: widgets.Overlay(dados: dados)),
+          Positioned(left: 1, bottom: 1, child: widgets.Overlay(dados: dados)),
         ],
       ),
     );
