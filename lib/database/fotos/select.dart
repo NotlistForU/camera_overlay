@@ -1,16 +1,16 @@
 import 'package:sipam_foto/database/create.dart';
 import 'package:sipam_foto/database/util/filtrar.dart';
 import 'package:sipam_foto/model/filtro.dart';
-import 'package:sipam_foto/model/foto.dart';
+import 'package:sipam_foto/model/foto.dart' as model;
 
-class Select {
-  static Future<List<Foto>> todasFotos() async {
+class Foto {
+  static Future<List<model.Foto>> todasFotos() async {
     final db = await Create.database;
     final result = await db.query('fotos', orderBy: 'data_criacao');
-    return result.map((e) => Foto.fromMap(e)).toList();
+    return result.map((e) => model.Foto.fromMap(e)).toList();
   }
 
-  static Future<List<Foto>> fotoMissao(int missaoid) async {
+  static Future<List<model.Foto>> fotoMissao(int missaoid) async {
     final db = await Create.database;
     final result = await db.query(
       'fotos',
@@ -18,10 +18,10 @@ class Select {
       whereArgs: [missaoid],
       orderBy: 'data_criacao DESC',
     );
-    return result.map((e) => Foto.fromMap(e)).toList();
+    return result.map((e) => model.Foto.fromMap(e)).toList();
   }
 
-  static Future<List<Foto>> fotoFiltro(Filtro filtro) async {
+  static Future<List<model.Foto>> fotoFiltro(Filtro filtro) async {
     // FILTRO POR...
     final db = await Create.database;
     final where = <String>[];
@@ -68,6 +68,6 @@ class Select {
       orderBy: 'data_criacao DESC',
     );
 
-    return result.map((e) => Foto.fromMap(e)).toList();
+    return result.map((e) => model.Foto.fromMap(e)).toList();
   }
 }

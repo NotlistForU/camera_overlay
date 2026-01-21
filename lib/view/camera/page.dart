@@ -126,11 +126,6 @@ class _CameraState extends State<Camera> {
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
-      final permissao = await PhotoManager.requestPermissionExtend();
-      if (!permissao.isAuth) {
-        throw Exception('Permissão de galeria negada');
-      }
-
       final albumNome = 'Sipam-${missao.nome}';
       final num = missao.contador + 1;
       final contadorAtual = num.toString().padLeft(2, '0');

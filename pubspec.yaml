@@ -55,6 +55,9 @@ dependencies:
 
   # Listar fotos/filtros/Salvar na galeria (álbuns)
   photo_manager: ^3.8.3
+  photo_manager_image_provider: 2.2.0
+  flutter_staggered_grid_view: ^0.7.0
+  photo_view: ^0.15.0
 
   # Mini mapa
   flutter_map: 8.2.2
