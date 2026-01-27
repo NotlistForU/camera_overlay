@@ -38,7 +38,7 @@ class _GaleriaState extends State<Galeria> {
     await PhotoManager.clearFileCache();
     await PhotoManager.releaseCache();
 
-    fotos = await select.Filtro.fotoFiltro(filtroAtual);
+    fotos = await select.Foto.filtro(filtroAtual);
     final ids = fotos.map((f) => f.assetId).toList();
     final Map<String, AssetEntity> temp = {};
     for (final id in ids) {

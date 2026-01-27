@@ -3,25 +3,14 @@ import 'package:sipam_foto/database/util/filtrar.dart';
 import 'package:sipam_foto/model/filtro.dart' as model;
 import 'package:sipam_foto/model/foto.dart' as model;
 
-class Filtro {
+class Foto {
   static Future<List<model.Foto>> todasFotos() async {
     final db = await Create.database;
     final result = await db.query('fotos', orderBy: 'data_criacao');
     return result.map((e) => model.Foto.fromMap(e)).toList();
   }
 
-  static Future<List<model.Foto>> missao(int missaoid) async {
-    final db = await Create.database;
-    final result = await db.query(
-      'fotos',
-      where: 'missao_id = ?',
-      whereArgs: [missaoid],
-      orderBy: 'data_criacao DESC',
-    );
-    return result.map((e) => model.Foto.fromMap(e)).toList();
-  }
-
-  static Future<List<model.Foto>> fotoFiltro(model.Filtro filtro) async {
+  static Future<List<model.Foto>> filtro(model.Filtro filtro) async {
     // FILTRO POR...
     final db = await Create.database;
     final where = <String>[];
