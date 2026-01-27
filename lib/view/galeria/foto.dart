@@ -17,7 +17,7 @@ class Foto extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await delete.Foto.foto(foto);
+              await delete.Foto.uma(foto);
               if (c.mounted) {
                 Navigator.pop(c, true);
               }

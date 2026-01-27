@@ -5,11 +5,11 @@ import 'package:sipam_foto/database/create.dart';
 import 'package:sipam_foto/model/foto.dart' as model;
 
 class Foto {
-  static Future<void> foto(model.Foto foto) async {
-    await fotos([foto]);
+  static Future<void> uma(model.Foto foto) async {
+    await varias([foto]);
   }
 
-  static Future<void> fotos(List<model.Foto> fotos) async {
+  static Future<void> varias(List<model.Foto> fotos) async {
     if (fotos.isEmpty) return;
     final ids = fotos.map((f) => f.assetId).toList();
     await PhotoManager.editor.deleteWithIds(ids);
