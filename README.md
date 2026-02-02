@@ -11,29 +11,53 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/to/develop-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+# camera_overlay 📷🧩
 
-## Features
+Um pacote Flutter para captura de fotos utilizando a câmera do dispositivo com **overlay customizável** sobre o preview, ideal para aplicações que precisam de enquadramento guiado, marcações visuais ou validação visual antes da captura.
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+---
 
-## Getting started
+## ✨ Funcionalidades
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+- Preview de câmera usando o plugin oficial `camera`
+- Suporte a **overlay customizado** (widgets sobre a câmera)
+- Captura de imagem respeitando o overlay exibido
+- Estrutura desacoplada para fácil reutilização em outros projetos
+- Compatível com Android e iOS
 
-## Usage
+---
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+## 📦 Instalação
 
-```dart
-const like = 'sample';
-```
+Adicione no seu `pubspec.yaml`:
 
-## Additional information
+```yaml
+dependencies:
+  camera_overlay:
+    git:
+      url: https://github.com/NotlistForU/camera_overlay.git
+      ref: main
+````
+## Exemplo
+| Parâmetro            | Tipo       | Descrição                               |
+| -------------------- | ---------- | --------------------------------------- |
+| `temBotaoGaleria`    | `bool`     | Exibe botão para abrir a galeria        |
+| `temBotaoGoogleMaps` | `bool`     | Exibe botão para abrir o Google Maps    |
+| `temMiniMapa`        | `bool`     | Exibe mini mapa no overlay              |
+| `onFotoFinal`        | `Function` | Callback chamado após a captura da foto |
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+````
+builder: (_) => CameraOverlay(
+                  temBotaoGaleria: false,
+                  temBotaoGoogleMaps: false,
+                  temMiniMapa: false,
+                  onFotoFinal: (bytes, localizacao) async {
+                    // bytes -> imagem capturada
+                    // localizacao -> dados de localização (se disponível)
+
+                    if (bytes == null) return;
+
+                    // Exemplo: salvar imagem localmente,
+                    // enviar para API ou processar os bytes
+                  },
+                ),
