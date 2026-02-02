@@ -61,3 +61,14 @@ builder: (_) => CameraOverlay(
                     // enviar para API ou processar os bytes
                   },
                 ),
+onFotoFinal: (Uint8List? bytes, dynamic localizacao) async {
+  if (bytes == null) return;
+
+  // bytes: imagem capturada pela câmera
+  // localizacao: informações de localização associadas à captura (se habilitado)
+
+  // Exemplo de uso:
+  // - salvar arquivo
+  // - enviar para backend
+  // - processar imagem
+}
