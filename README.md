@@ -38,7 +38,7 @@ dependencies:
       url: https://github.com/NotlistForU/camera_overlay.git
       ref: main
 ````
-## Exemplo
+## 🚀 Exemplo
 | Parâmetro            | Tipo       | Descrição                               |
 | -------------------- | ---------- | --------------------------------------- |
 | `temBotaoGaleria`    | `bool`     | Exibe botão para abrir a galeria        |
