@@ -10,7 +10,7 @@ class Localizacao {
     required this.longitude,
     required this.altitude,
     DateTime? data,
-  }) : data = data ?? DateTime.now().toUtc();
+  }) : data = data ?? DateTime.now();
 
   String get dados {
     final formatador = DateFormat('dd/MM/yyyy HH:mm:ss', 'pt_BR');
