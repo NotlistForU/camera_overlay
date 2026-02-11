@@ -34,16 +34,16 @@ Future<bool> requestLocationPermission() async {
 }
 
 /// 3. Permissão da galeria (PhotoManager)
-Future<bool> requestGalleryPermission() async {
-  final result = await PhotoManager.requestPermissionExtend();
-  return result.isAuth;
-}
+// Future<bool> requestGalleryPermission() async {
+//   final result = await PhotoManager.requestPermissionExtend();
+//   return result.isAuth;
+// }
 
 /// 4. Função que chama todas
 Future<bool> requestAllPermissions() async {
   final cameraOk = await requestCameraPermission();
   final locationOk = await requestLocationPermission();
-  final galleryOk = await requestGalleryPermission();
+  // final galleryOk = await requestGalleryPermission();
 
-  return cameraOk && locationOk && galleryOk;
+  return cameraOk && locationOk;
 }
