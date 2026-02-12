@@ -211,12 +211,19 @@ class _CameraState extends State<CameraOverlay> {
       _setState(CameraStatus.inicializandoCamera);
       await _initCamera();
 
-      _setState(CameraStatus.pronta);
-      sub = service.emTempoReal().listen((loc) {
+     // começa a escutar
+      final stream = service.emTempoReal();
+      
+      sub = stream.listen((loc) {
         setState(() {
           localizacaoAtual = loc;
         });
       });
+      
+      // aguarda PRIMEIRA localização antes de liberar câmera
+      localizacaoAtual = await stream.first;
+      
+      _setState(CameraStatus.pronta);
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
