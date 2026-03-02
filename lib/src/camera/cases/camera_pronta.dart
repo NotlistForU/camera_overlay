@@ -15,6 +15,8 @@ Widget cameraPronta({
   required bool tirandoFoto,
   required File? fotoTemporaria,
   required CameraController controller,
+  required Function(ScaleStartDetails) onScaleStart,
+  required Function(ScaleUpdateDetails) onScaleUpdate,
   required GlobalKey repaintKey,
   required VoidCallback onFoto,
   required VoidCallback onMaps,
@@ -38,7 +40,11 @@ Widget cameraPronta({
             child: widgets.Preview(
               temMiniMapa: temMiniMapa,
               imageFile: fotoTemporaria,
-              preview: CameraPreview(controller),
+              preview: GestureDetector(
+                onScaleStart: onScaleStart,
+                onScaleUpdate: onScaleUpdate,
+                child: CameraPreview(controller),
+              ),
               dados: localizacaoAtual?.dados ?? 'Obtendo GPS...',
               repaintKey: repaintKey,
               lat: localizacaoAtual?.latitude,

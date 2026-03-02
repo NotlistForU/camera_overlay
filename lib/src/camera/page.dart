@@ -59,6 +59,9 @@ class _CameraState extends State<CameraOverlay> {
   File? _ultimaFoto;
   File? _fotoTemporaria;
   File? _fotoAtual;
+  double _minZoom = 1.0;
+  double _maxZoom = 1.0;
+  double _currentZoom = 1.0;
   final GlobalKey _repaintKey = GlobalKey();
   bool feedback = false;
   model.Localizacao? localizacaoAtual;
@@ -200,6 +203,19 @@ class _CameraState extends State<CameraOverlay> {
     }
   }
 
+  double _baseZoom = 1.0;
+
+  void _handleScaleStart(ScaleStartDetails details) {
+    _baseZoom = _currentZoom;
+  }
+
+  Future<void> _handleScaleUpdate(ScaleUpdateDetails details) async {
+    double zoom = (_baseZoom * details.scale).clamp(_minZoom, _maxZoom);
+
+    await _controller!.setZoomLevel(zoom);
+    _currentZoom = zoom;
+  }
+
   Future<void> _initFluxo() async {
     try {
       final permitido = await permissao.requestAllPermissions();
@@ -243,6 +259,8 @@ class _CameraState extends State<CameraOverlay> {
       enableAudio: false,
     );
     await _controller!.initialize();
+    _minZoom = await _controller!.getMinZoomLevel();
+    _maxZoom = await _controller!.getMaxZoomLevel();
   }
 
   @override
@@ -269,6 +287,8 @@ class _CameraState extends State<CameraOverlay> {
               feedback: feedback,
               fotoTemporaria: _fotoTemporaria,
               controller: _controller!,
+              onScaleStart: _handleScaleStart,
+              onScaleUpdate: _handleScaleUpdate,
               repaintKey: _repaintKey,
               onFoto: _onFoto,
               onMaps: _onMaps,
