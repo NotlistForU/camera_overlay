@@ -37,20 +37,15 @@ Widget cameraPronta({
                   ? Border.all(color: Colors.white, width: 6)
                   : null,
             ),
-            child: widgets.Preview(
-              temMiniMapa: temMiniMapa,
-              imageFile: fotoTemporaria,
-              preview: GestureDetector(
-                onScaleStart: onScaleStart,
-                onScaleUpdate: (details) {
-                  debugPrint("Zoom detectado: ${details.scale}");
-                },
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                debugPrint("TOQUE DETECTADO");
+              },
+              child: Container(
+                color: Colors.transparent,
                 child: CameraPreview(controller),
               ),
-              dados: localizacaoAtual?.dados ?? 'Obtendo GPS...',
-              repaintKey: repaintKey,
-              lat: localizacaoAtual?.latitude,
-              lng: localizacaoAtual?.longitude,
             ),
           ),
         ),
