@@ -211,7 +211,9 @@ class _CameraState extends State<CameraOverlay> {
 
   Future<void> _handleScaleUpdate(ScaleUpdateDetails details) async {
     double zoom = (_baseZoom * details.scale).clamp(_minZoom, _maxZoom);
-
+    debugPrint("scale: ${details.scale}");
+    debugPrint("min: $_minZoom max: $_maxZoom");
+    debugPrint("zoom calculado: $zoom");
     await _controller!.setZoomLevel(zoom);
     _currentZoom = zoom;
   }
