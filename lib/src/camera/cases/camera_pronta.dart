@@ -42,9 +42,7 @@ Widget cameraPronta({
               imageFile: fotoTemporaria,
               preview: GestureDetector(
                 onScaleStart: onScaleStart,
-                onScaleUpdate: (details) {
-                  debugPrint("Zoom detectado: ${details.scale}");
-                },
+                onScaleUpdate: onScaleUpdate,
                 child: CameraPreview(controller),
               ),
               dados: localizacaoAtual?.dados ?? 'Obtendo GPS...',
