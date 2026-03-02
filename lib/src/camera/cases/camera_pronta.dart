@@ -25,7 +25,7 @@ Widget cameraPronta({
   required model.Localizacao? localizacaoAtual,
 }) {
   return Scaffold(
-    appBar: AppBar(title: const Text('Câmera')),
+    appBar: AppBar(title: const Text('Câmera Overlay')),
     body: Stack(
       children: [
         Positioned.fill(
@@ -42,7 +42,9 @@ Widget cameraPronta({
               imageFile: fotoTemporaria,
               preview: GestureDetector(
                 onScaleStart: onScaleStart,
-                onScaleUpdate: onScaleUpdate,
+                onScaleUpdate: (details) {
+                  debugPrint("Zoom detectado: ${details.scale}");
+                },
                 child: CameraPreview(controller),
               ),
               dados: localizacaoAtual?.dados ?? 'Obtendo GPS...',
