@@ -8,6 +8,7 @@ import '../widget/preview.dart' as widgets;
 
 const double height = widgets.BottomBar.height;
 Widget cameraPronta({
+  required String titulo,
   required bool temBotaoGoogleMaps,
   required bool temBotaoGaleria,
   required bool temMiniMapa,
@@ -25,7 +26,7 @@ Widget cameraPronta({
   required model.Localizacao? localizacaoAtual,
 }) {
   return Scaffold(
-    appBar: AppBar(title: const Text('Câmera Overlay')),
+    appBar: AppBar(title: Text(titulo)),
     body: Stack(
       children: [
         Positioned.fill(

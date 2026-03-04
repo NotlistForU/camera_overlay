@@ -32,6 +32,7 @@ import 'widget/bottom_bar.dart' as widgets;
 import 'permissoes.dart' as permissao;
 
 class CameraOverlay extends StatefulWidget {
+  final String titulo;
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
   final bool temMiniMapa;
@@ -40,6 +41,7 @@ class CameraOverlay extends StatefulWidget {
   onFotoFinal;
   const CameraOverlay({
     super.key,
+    required this.titulo,
     required this.temBotaoGoogleMaps,
     required this.temBotaoGaleria,
     required this.temMiniMapa,
@@ -282,6 +284,7 @@ class _CameraState extends State<CameraOverlay> {
             final podeAbrir = snapshot.data ?? false;
 
             return cases.cameraPronta(
+              titulo: widget.titulo,
               temBotaoGoogleMaps: widget.temBotaoGoogleMaps,
               temMiniMapa: widget.temMiniMapa,
               temBotaoGaleria: widget.temBotaoGaleria,
