@@ -51,7 +51,15 @@ class Preview extends StatelessWidget {
                 lng: lng!,
               ),
             ),
-          Positioned(left: 1, bottom: 1, child: widgets.Overlay(dados: dados)),
+          Positioned(
+            left: 1,
+            bottom: 1,
+            child: AnimatedRotation(
+              turns: turns,
+              duration: const Duration(milliseconds: 300),
+              child: widgets.Overlay(dados: dados),
+            ),
+          ),
         ],
       ),
     );
