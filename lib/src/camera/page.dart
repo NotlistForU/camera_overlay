@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 import 'enum.dart';
 
@@ -69,16 +70,37 @@ class _CameraState extends State<CameraOverlay> {
   model.Localizacao? localizacaoAtual;
 
   late final StreamSubscription<model.Localizacao> sub;
+  StreamSubscription<AccelerometerEvent>? _accelSubscription;
+  double _turns = 0.0;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _initFluxo();
+    _accelSubscription = accelerometerEventStream().listen((
+      AccelerometerEvent event,
+    ) {
+      double novoGiro = _turns;
+
+      if (event.x > 6.0) {
+        novoGiro = -0.25;
+      } else if (event.x < -6.0) {
+        novoGiro = 0.25;
+      } else if (event.y > 6.0) {
+        novoGiro = 0.0;
+      }
+      if (novoGiro != _turns) {
+        setState(() {
+          _turns = novoGiro;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _accelSubscription?.cancel();
     // libera orientação ao sair da câmera
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -291,6 +313,7 @@ class _CameraState extends State<CameraOverlay> {
             final podeAbrir = snapshot.data ?? false;
 
             return cases.cameraPronta(
+              turns: _turns,
               titulo: widget.titulo,
               temBotaoGoogleMaps: widget.temBotaoGoogleMaps,
               temMiniMapa: widget.temMiniMapa,

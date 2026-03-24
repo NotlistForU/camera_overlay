@@ -12,6 +12,7 @@ class Preview extends StatelessWidget {
   final GlobalKey repaintKey;
   final double? lat;
   final double? lng;
+  final double turns;
 
   const Preview({
     super.key,
@@ -22,6 +23,7 @@ class Preview extends StatelessWidget {
     this.lat,
     this.lng,
     required this.temMiniMapa,
+    required this.turns,
   });
 
   @override
@@ -30,6 +32,14 @@ class Preview extends StatelessWidget {
       key: repaintKey,
       child: Stack(
         children: [
+          Positioned.fill(
+            child: AnimatedRotation(
+              turns: turns,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+              child: preview,
+            ),
+          ),
           Positioned.fill(child: preview),
           if (lat != null && lng != null)
             Positioned(
