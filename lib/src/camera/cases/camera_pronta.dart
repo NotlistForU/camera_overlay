@@ -24,6 +24,7 @@ Widget cameraPronta({
   required VoidCallback? onAbrirGaleria,
   required bool podeAbrirMaps,
   required model.Localizacao? localizacaoAtual,
+  required double turns,
 }) {
   return Scaffold(
     appBar: AppBar(title: Text(titulo)),
@@ -39,6 +40,7 @@ Widget cameraPronta({
                   : null,
             ),
             child: widgets.Preview(
+              turns: turns,
               temMiniMapa: temMiniMapa,
               imageFile: fotoTemporaria,
               preview: GestureDetector(
