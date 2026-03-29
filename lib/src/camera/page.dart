@@ -83,11 +83,11 @@ class _CameraState extends State<CameraOverlay> {
     ) {
       double novoGiro = _turns;
 
-      if (event.x > 6.0) {
-        novoGiro = -0.25;
-      } else if (event.x < -6.0) {
+      if (event.x > 9.0) {
         novoGiro = 0.25;
-      } else if (event.y > 6.0) {
+      } else if (event.x < -9.0) {
+        novoGiro = -0.25;
+      } else if (event.y > 9.0) {
         novoGiro = 0.0;
       }
       if (novoGiro != _turns) {
@@ -253,18 +253,18 @@ class _CameraState extends State<CameraOverlay> {
       _setState(CameraStatus.inicializandoCamera);
       await _initCamera();
 
-     // começa a escutar
+      // começa a escutar
       final stream = service.emTempoReal();
-      
+
       sub = stream.listen((loc) {
         setState(() {
           localizacaoAtual = loc;
         });
       });
-      
+
       // aguarda PRIMEIRA localização antes de liberar câmera
       localizacaoAtual = await stream.first;
-      
+
       _setState(CameraStatus.pronta);
     } catch (e) {
       _erro = e.toString();
