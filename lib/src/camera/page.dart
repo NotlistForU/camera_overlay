@@ -166,7 +166,7 @@ class _CameraState extends State<CameraOverlay> {
           _repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
 
-      final image = await boundary.toImage(pixelRatio: 4);
+      final image = await boundary.toImage(pixelRatio: 2);
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       Uint8List finalBytes = byteData!.buffer.asUint8List();
 
@@ -205,9 +205,9 @@ class _CameraState extends State<CameraOverlay> {
       img.Image screenshotGirado;
 
       if (turns == 0.25) {
-        screenshotGirado = img.copyRotate(screenshot, angle: 90);
-      } else if (turns == -0.25) {
         screenshotGirado = img.copyRotate(screenshot, angle: -90);
+      } else if (turns == -0.25) {
+        screenshotGirado = img.copyRotate(screenshot, angle: 90);
       } else {
         screenshotGirado = screenshot;
       }
