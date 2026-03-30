@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
 import 'package:image/image.dart' as img;
+import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -167,28 +168,16 @@ class _CameraState extends State<CameraOverlay> {
 
       final image = await boundary.toImage(pixelRatio: 4);
       final byteData = await image.toByteData(format: ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
       Uint8List finalBytes = byteData!.buffer.asUint8List();
 
       if (_turns != 0.0) {
-        img.Image? screenshot = img.decodeImage(finalBytes);
-
-        if (screenshot != null) {
-          img.Image screeshotGirado;
-
-          if (_turns == 0.25) {
-            screeshotGirado = img.copyRotate(screenshot, angle: 90);
-          } else if (_turns == -0.25) {
-            screeshotGirado = img.copyRotate(screenshot, angle: -90);
-          } else {
-            screeshotGirado = screenshot;
-          }
-
-          finalBytes = img.encodePng(screeshotGirado);
-        }
+        finalBytes = await compute(_girarPrintBackground, {
+          'bytes': finalBytes,
+          'turns': _turns,
+        });
       }
 
-      await widget.onFotoFinal(pngBytes, localizacaoAtual);
+      await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();
@@ -201,6 +190,32 @@ class _CameraState extends State<CameraOverlay> {
       _erro = e.toString();
       _setState(CameraStatus.erro);
     }
+  }
+
+  Future<Uint8List> _girarPrintBackground(Map<String, dynamic> dados) async {
+    final Uint8List bytes = dados['bytes'];
+    final double turns = dados['turns'];
+
+    // Decodifica a imagem
+    img.Image? screenshot = img.decodeImage(bytes);
+
+    if (screenshot != null) {
+      img.Image screenshotGirado;
+
+      if (turns == 0.25) {
+        screenshotGirado = img.copyRotate(screenshot, angle: 90);
+      } else if (turns == -0.25) {
+        screenshotGirado = img.copyRotate(screenshot, angle: -90);
+      } else {
+        screenshotGirado = screenshot;
+      }
+
+      // Transforma de volta em bytes PNG e retorna
+      return img.encodePng(screenshotGirado);
+    }
+
+    // Se der algum erro bizarro, devolve a imagem original
+    return bytes;
   }
 
   Future<bool> podeAbrirMaps() async {
