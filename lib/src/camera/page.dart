@@ -192,7 +192,9 @@ class _CameraState extends State<CameraOverlay> {
     }
   }
 
-  Future<Uint8List> _girarPrintBackground(Map<String, dynamic> dados) async {
+  static Future<Uint8List> _girarPrintBackground(
+    Map<String, dynamic> dados,
+  ) async {
     final Uint8List bytes = dados['bytes'];
     final double turns = dados['turns'];
 
