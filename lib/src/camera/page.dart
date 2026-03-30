@@ -134,23 +134,43 @@ class _CameraState extends State<CameraOverlay> {
   Future<void> _onFoto() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
     if (_tirandoFoto) return;
+
     try {
       setState(() {
         _tirandoFoto = true;
       });
+
+      DeviceOrientation orietacaoReal = DeviceOrientation.portraitUp;
+
+      await _controller!.lockCaptureOrientation(orietacaoReal);
+
       final XFile xfile = await _controller!.takePicture();
+
+      await _controller!.unlockCaptureOrientation();
+
       final File file = File(xfile.path);
+
       setState(() {
         _fotoTemporaria = file;
         triggerFeedback();
       });
+
       await salvarFotoFinal();
+
       setState(() {
         _tirandoFoto = false;
       });
     } catch (e) {
+      try {
+        await _controller!.unlockCaptureOrientation();
+      } catch (_) {}
+
       _erro = e.toString();
       _setState(CameraStatus.erro);
+
+      setState(() {
+        _tirandoFoto = false;
+      });
     }
   }
 
