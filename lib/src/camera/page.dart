@@ -139,58 +139,13 @@ class _CameraState extends State<CameraOverlay> {
       setState(() {
         _tirandoFoto = true;
       });
-
       final XFile xfile = await _controller!.takePicture();
       final File file = File(xfile.path);
-
-      // --- RAIO-X: DEBUG DA ROTAÇÃO ---
-      print("=== DEBUG FOTO ===");
-      print("Valor do _turns no momento do clique: $_turns");
-
-      if (_turns != 0.0) {
-        print("1. Entrou no IF de rotação! O celular está deitado.");
-        final Uint8List bytes = await file.readAsBytes();
-
-        img.Image? imagemOriginal = img.decodeImage(bytes);
-
-        if (imagemOriginal != null) {
-          print(
-            "2. Imagem decodificada! Tamanho original: ${imagemOriginal.width} x ${imagemOriginal.height}",
-          );
-
-          img.Image imagemGirada;
-          if (_turns == 0.25) {
-            imagemGirada = img.copyRotate(imagemOriginal, angle: 90);
-            print("3. Girou 90 graus (Direita).");
-          } else {
-            imagemGirada = img.copyRotate(imagemOriginal, angle: -90); // ou 270
-            print("3. Girou -90 graus (Esquerda).");
-          }
-
-          print(
-            "4. Tamanho APÓS girar: ${imagemGirada.width} x ${imagemGirada.height}",
-          );
-
-          final bytesGirados = img.encodeJpg(imagemGirada);
-          await file.writeAsBytes(bytesGirados);
-          print("5. Arquivo sobrescrito com sucesso!");
-        } else {
-          print("ERRO: imagemOriginal retornou nulo. Não decodificou.");
-        }
-      } else {
-        print(
-          "AVISO: Passou reto pelo IF. O app achou que o celular estava em pé (_turns == 0.0).",
-        );
-      }
-      print("==================");
-      // ---------------------------------
       setState(() {
         _fotoTemporaria = file;
         triggerFeedback();
       });
-
       await salvarFotoFinal();
-
       setState(() {
         _tirandoFoto = false;
       });
@@ -213,6 +168,25 @@ class _CameraState extends State<CameraOverlay> {
       final image = await boundary.toImage(pixelRatio: 4);
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
+      Uint8List finalBytes = byteData!.buffer.asUint8List();
+
+      if (_turns != 0.0) {
+        img.Image? screenshot = img.decodeImage(finalBytes);
+
+        if (screenshot != null) {
+          img.Image screeshotGirado;
+
+          if (_turns == 0.25) {
+            screeshotGirado = img.copyRotate(screenshot, angle: 90);
+          } else if (_turns == -0.25) {
+            screeshotGirado = img.copyRotate(screenshot, angle: -90);
+          } else {
+            screeshotGirado = screenshot;
+          }
+
+          finalBytes = img.encodePng(screeshotGirado);
+        }
+      }
 
       await widget.onFotoFinal(pngBytes, localizacaoAtual);
 
