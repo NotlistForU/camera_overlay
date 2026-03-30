@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
+import 'package:image/image.dart' as img;
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -134,28 +135,32 @@ class _CameraState extends State<CameraOverlay> {
   Future<void> _onFoto() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
     if (_tirandoFoto) return;
-
     try {
       setState(() {
         _tirandoFoto = true;
       });
 
-      DeviceOrientation orietacaoReal = DeviceOrientation.portraitUp;
-      if (_turns == 0.25) {
-        orietacaoReal = DeviceOrientation.landscapeRight;
-      } else if (_turns == -0.25) {
-        orietacaoReal = DeviceOrientation.landscapeLeft;
-      } else {
-        orietacaoReal = DeviceOrientation.portraitUp;
-      }
-
-      await _controller!.lockCaptureOrientation(orietacaoReal);
-
       final XFile xfile = await _controller!.takePicture();
-
-      await _controller!.unlockCaptureOrientation();
-
       final File file = File(xfile.path);
+
+      if (_turns != 0.0) {
+        final Uint8List bytes = await file.readAsBytes();
+
+        img.Image? imagemOriginal = img.decodeImage(bytes);
+
+        if (imagemOriginal != null) {
+          img.Image imagemGirada;
+
+          if (_turns == 0.25) {
+            imagemGirada = img.copyRotate(imagemOriginal, angle: 90);
+          } else {
+            imagemGirada = img.copyRotate(imagemOriginal, angle: -90);
+          }
+
+          final bytesGirados = img.encodeJpg(imagemGirada);
+          await file.writeAsBytes(bytesGirados);
+        }
+      }
 
       setState(() {
         _fotoTemporaria = file;
@@ -168,10 +173,6 @@ class _CameraState extends State<CameraOverlay> {
         _tirandoFoto = false;
       });
     } catch (e) {
-      try {
-        await _controller!.unlockCaptureOrientation();
-      } catch (_) {}
-
       _erro = e.toString();
       _setState(CameraStatus.erro);
 

@@ -38,6 +38,7 @@ dependencies:
 
   # Sensor de gravidade(indentificar rotação do celular)
   sensors_plus: ^7.0.0
+  image: ^4.8.0
 
 dev_dependencies:
   flutter_test:
