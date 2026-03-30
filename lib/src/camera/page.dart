@@ -141,6 +141,13 @@ class _CameraState extends State<CameraOverlay> {
       });
 
       DeviceOrientation orietacaoReal = DeviceOrientation.portraitUp;
+      if (_turns == 0.25) {
+        orietacaoReal = DeviceOrientation.landscapeRight;
+      } else if (_turns == -0.25) {
+        orietacaoReal = DeviceOrientation.landscapeLeft;
+      } else {
+        orietacaoReal = DeviceOrientation.portraitUp;
+      }
 
       await _controller!.lockCaptureOrientation(orietacaoReal);
 
