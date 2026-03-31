@@ -40,6 +40,16 @@ class CameraOverlay extends StatefulWidget {
   final bool temBotaoGaleria;
   final bool temMiniMapa;
   final VoidCallback? onAbrirGaleria;
+
+  /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
+  ///
+  /// O padrão é `-90`. Se a foto sair invertida, tente passar `90`.
+  final int anguloRotacaoDireita;
+
+  /// Ângulo para corrigir a foto quando o celular deitar para a ESQUERDA.
+  ///
+  /// O padrão é `90`. Se a foto sair invertida, tente passar `-90`.
+  final int anguloRotacaoEsquerda;
   final Future<void> Function(Uint8List bytes, model.Localizacao? localizacao)
   onFotoFinal;
   const CameraOverlay({
@@ -50,6 +60,8 @@ class CameraOverlay extends StatefulWidget {
     required this.temMiniMapa,
     required this.onFotoFinal,
     this.onAbrirGaleria,
+    this.anguloRotacaoDireita = -90,
+    this.anguloRotacaoEsquerda = 90,
   });
   @override
   State<CameraOverlay> createState() => _CameraState();
@@ -174,6 +186,8 @@ class _CameraState extends State<CameraOverlay> {
         finalBytes = await compute(_girarPrintBackground, {
           'bytes': finalBytes,
           'turns': _turns,
+          'anguloDireita': widget.anguloRotacaoDireita,
+          'anguloEsquerda': widget.anguloRotacaoEsquerda,
         });
       }
 
@@ -197,6 +211,8 @@ class _CameraState extends State<CameraOverlay> {
   ) async {
     final Uint8List bytes = dados['bytes'];
     final double turns = dados['turns'];
+    final int anguloDireita = dados['anguloDireita'];
+    final int anguloEsquerda = dados['anguloEsquerda'];
 
     // Decodifica a imagem
     img.Image? screenshot = img.decodeImage(bytes);
@@ -205,9 +221,9 @@ class _CameraState extends State<CameraOverlay> {
       img.Image screenshotGirado;
 
       if (turns == 0.25) {
-        screenshotGirado = img.copyRotate(screenshot, angle: -90);
+        screenshotGirado = img.copyRotate(screenshot, angle: anguloDireita);
       } else if (turns == -0.25) {
-        screenshotGirado = img.copyRotate(screenshot, angle: 90);
+        screenshotGirado = img.copyRotate(screenshot, angle: anguloEsquerda);
       } else {
         screenshotGirado = screenshot;
       }
