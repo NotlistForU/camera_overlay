@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:flutter/material.dart';
 import '../model/localizacao.dart' as model;
 import '../widget/bottom_bar.dart' as widgets;
 import '../widget/preview.dart' as widgets;
 
 const double height = widgets.BottomBar.height;
+
 Widget cameraPronta({
   required String titulo,
   required bool temBotaoGoogleMaps,
@@ -25,9 +27,24 @@ Widget cameraPronta({
   required bool podeAbrirMaps,
   required model.Localizacao? localizacaoAtual,
   required double turns,
+  required String observacao,
+  required VoidCallback onAddObservacao,
 }) {
+  String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+  if (observacao.isNotEmpty) {
+    overlay += '\nObs: $observacao';
+  }
+
   return Scaffold(
-    appBar: AppBar(title: Text(titulo)),
+    appBar: AppBar(
+      title: Text(titulo),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.note_add),
+          onPressed: onAddObservacao,
+        ),
+      ],
+    ),
     body: Stack(
       children: [
         Positioned.fill(
@@ -48,7 +65,7 @@ Widget cameraPronta({
                 onScaleUpdate: onScaleUpdate,
                 child: CameraPreview(controller),
               ),
-              dados: localizacaoAtual?.dados ?? 'Obtendo GPS...',
+              dados: overlay,
               repaintKey: repaintKey,
               lat: localizacaoAtual?.latitude,
               lng: localizacaoAtual?.longitude,

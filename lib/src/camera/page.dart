@@ -87,6 +87,9 @@ class _CameraState extends State<CameraOverlay> {
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
   double _turns = 0.0;
 
+  String _observacao = '';
+  final TextEditingController _obsController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -353,6 +356,36 @@ class _CameraState extends State<CameraOverlay> {
     _maxZoom = await _controller!.getMaxZoomLevel();
   }
 
+  void _mostrarDialogoObservacao() {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Adicionar Observação'),
+          content: TextField(
+            controller: _obsController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Digite a observação...',
+            ),
+            onChanged: (textoDigitado) {
+              // Isso aqui vai forçar o cameraPronta a desenhar de novo com o texto novo
+              setState(() {
+                _observacao = textoDigitado;
+              });
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Pronto'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('>>> BUILD CAMERA PAGE <<<');
@@ -387,6 +420,8 @@ class _CameraState extends State<CameraOverlay> {
               onAbrirGaleria: widget.onAbrirGaleria,
               podeAbrirMaps: podeAbrir,
               localizacaoAtual: localizacaoAtual,
+              observacao: _observacao,
+              onAddObservacao: _mostrarDialogoObservacao,
             );
           },
         );
