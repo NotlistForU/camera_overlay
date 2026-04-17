@@ -365,6 +365,8 @@ class _CameraState extends State<CameraOverlay> {
           content: TextField(
             controller: _obsController,
             autofocus: true,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
             decoration: const InputDecoration(
               hintText: 'Digite a observação...',
             ),

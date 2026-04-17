@@ -8,14 +8,19 @@ class Overlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final display = dados.isNotEmpty ? dados : '-';
-    return Text(
-      display,
-      style: const TextStyle(
-        fontSize: 16,
-        color: Colors.white,
-        shadows: [
-          Shadow(blurRadius: 4, color: Colors.black, offset: Offset(1, 1)),
-        ],
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        display,
+        softWrap: true,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.white,
+          shadows: [
+            Shadow(blurRadius: 4, color: Colors.black, offset: Offset(1, 1)),
+          ],
+        ),
       ),
     );
   }
