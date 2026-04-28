@@ -38,7 +38,7 @@ class CameraOverlay extends StatefulWidget {
   final String titulo;
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
-  final bool temMiniMapa;
+  bool temMiniMapa;
   final VoidCallback? onAbrirGaleria;
 
   /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
@@ -52,11 +52,11 @@ class CameraOverlay extends StatefulWidget {
   final int anguloRotacaoEsquerda;
   final Future<void> Function(Uint8List bytes, model.Localizacao? localizacao)
   onFotoFinal;
-  const CameraOverlay({
+  CameraOverlay({
     super.key,
     required this.titulo,
     required this.temBotaoGoogleMaps,
-    required this.temBotaoGaleria,
+    this.temBotaoGaleria = false,
     required this.temMiniMapa,
     required this.onFotoFinal,
     this.onAbrirGaleria,
@@ -388,6 +388,60 @@ class _CameraState extends State<CameraOverlay> {
     );
   }
 
+  void _mostrarConfig() {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        // O StatefulBuilder é necessário para as chavinhas atualizarem enquanto o dialog estiver aberto
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStateDialog) {
+            return AlertDialog(
+              title: const Text('Configurações'),
+              content: Column(
+                mainAxisSize:
+                    MainAxisSize.min, // Para a coluna não ocupar a tela toda
+                children: [
+                  SwitchListTile(
+                    title: const Text('Ativar Minimapa'),
+                    value: widget.temMiniMapa,
+                    onChanged: (bool novoValor) {
+                      setStateDialog(() {
+                        widget.temMiniMapa =
+                            novoValor; // Atualiza visualmente dentro do Dialog
+                      });
+                      setState(() {
+                        // Atualiza a sua tela principal por trás (caso precise redesenhar algo lá)
+                      });
+                    },
+                  ),
+                  // SwitchListTile(
+                  //   title: const Text('Ativar Overlay'),
+                  //   value: _overlayAtivo,
+                  //   onChanged: (bool novoValor) {
+                  //     setStateDialog(() {
+                  //       _overlayAtivo =
+                  //           novoValor; // Atualiza visualmente dentro do Dialog
+                  //     });
+                  //     setState(() {
+                  //       // Atualiza a sua tela principal por trás
+                  //     });
+                  //   },
+                  // ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Pronto'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('>>> BUILD CAMERA PAGE <<<');
@@ -424,6 +478,7 @@ class _CameraState extends State<CameraOverlay> {
               localizacaoAtual: localizacaoAtual,
               observacao: _observacao,
               onAddObservacao: _mostrarDialogoObservacao,
+              onConfig: _mostrarConfig,
             );
           },
         );

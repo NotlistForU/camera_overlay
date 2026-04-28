@@ -29,6 +29,7 @@ Widget cameraPronta({
   required double turns,
   required String observacao,
   required VoidCallback onAddObservacao,
+  required VoidCallback onConfig,
 }) {
   String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
   if (observacao.isNotEmpty) {
@@ -40,9 +41,10 @@ Widget cameraPronta({
       title: Text(titulo),
       actions: [
         IconButton(
-          icon: const Icon(Icons.note_add),
+          icon: const Icon(Icons.edit_note),
           onPressed: onAddObservacao,
         ),
+        IconButton(onPressed: onConfig, icon: Icon(Icons.settings)),
       ],
     ),
     body: Stack(
