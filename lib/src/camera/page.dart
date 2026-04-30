@@ -11,6 +11,10 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+// IMPORT salvamento local de dados simples.
+import 'package:shared_preferences/shared_preferences.dart';
+
+// IMPORT enums
 import 'enum.dart';
 
 // IMPORT service
@@ -38,7 +42,7 @@ class CameraOverlay extends StatefulWidget {
   final String titulo;
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
-  bool temMiniMapa;
+  final bool temMiniMapa;
   final VoidCallback? onAbrirGaleria;
 
   /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
@@ -52,12 +56,12 @@ class CameraOverlay extends StatefulWidget {
   final int anguloRotacaoEsquerda;
   final Future<void> Function(Uint8List bytes, model.Localizacao? localizacao)
   onFotoFinal;
-  CameraOverlay({
+  const CameraOverlay({
     super.key,
-    required this.titulo,
-    required this.temBotaoGoogleMaps,
+    this.titulo = 'Câmera',
+    this.temBotaoGoogleMaps = true,
     this.temBotaoGaleria = false,
-    required this.temMiniMapa,
+    this.temMiniMapa = true,
     required this.onFotoFinal,
     this.onAbrirGaleria,
     this.anguloRotacaoDireita = -90,
@@ -69,7 +73,6 @@ class CameraOverlay extends StatefulWidget {
 
 class _CameraState extends State<CameraOverlay> {
   CameraStatus _state = CameraStatus.loading;
-
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   String? _erro;
@@ -90,9 +93,13 @@ class _CameraState extends State<CameraOverlay> {
   String _observacao = '';
   final TextEditingController _obsController = TextEditingController();
 
+  late bool _exibirMiniMapa;
+
   @override
   void initState() {
     super.initState();
+    _exibirMiniMapa = widget.temMiniMapa;
+    _carregarPreferencias();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _initFluxo();
     _accelSubscription = accelerometerEventStream().listen((
@@ -128,6 +135,13 @@ class _CameraState extends State<CameraOverlay> {
     sub.cancel();
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _carregarPreferencias() async {
+    final preferencias = await SharedPreferences.getInstance();
+    setState(() {
+      _exibirMiniMapa = preferencias.getBool('exibirMiniMapa') ?? false;
+    });
   }
 
   void onUpdate() {
@@ -388,7 +402,11 @@ class _CameraState extends State<CameraOverlay> {
     );
   }
 
-  void _mostrarConfig() {
+  void _mostrarConfig() async {
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -403,15 +421,22 @@ class _CameraState extends State<CameraOverlay> {
                 children: [
                   SwitchListTile(
                     title: const Text('Ativar Minimapa'),
-                    value: widget.temMiniMapa,
-                    onChanged: (bool novoValor) {
+                    value: _exibirMiniMapa,
+                    onChanged: (bool novoValor) async {
+                      debugPrint('Botão Ativar Minimapa CLICADO!');
+
+                      await preferences.setBool('exibirMiniMapa', novoValor);
                       setStateDialog(() {
-                        widget.temMiniMapa =
+                        _exibirMiniMapa =
                             novoValor; // Atualiza visualmente dentro do Dialog
                       });
+
+                      if (!mounted) return;
+
                       setState(() {
-                        // Atualiza a sua tela principal por trás (caso precise redesenhar algo lá)
+                        _exibirMiniMapa = novoValor;
                       });
+                      debugPrint(_exibirMiniMapa.toString());
                     },
                   ),
                   // SwitchListTile(
@@ -462,7 +487,7 @@ class _CameraState extends State<CameraOverlay> {
               turns: _turns,
               titulo: widget.titulo,
               temBotaoGoogleMaps: widget.temBotaoGoogleMaps,
-              temMiniMapa: widget.temMiniMapa,
+              temMiniMapa: _exibirMiniMapa,
               temBotaoGaleria: widget.temBotaoGaleria,
               tirandoFoto: _tirandoFoto,
               feedback: feedback,
