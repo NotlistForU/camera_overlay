@@ -141,6 +141,8 @@ class _CameraState extends State<CameraOverlay> {
     final preferencias = await SharedPreferences.getInstance();
     setState(() {
       _exibirMiniMapa = preferencias.getBool('exibirMiniMapa') ?? false;
+      _sugestoesObservacoes =
+          preferencias.getStringList('sugestoesObservacoes') ?? [];
     });
   }
 
@@ -370,30 +372,94 @@ class _CameraState extends State<CameraOverlay> {
     _maxZoom = await _controller!.getMaxZoomLevel();
   }
 
-  void _mostrarDialogoObservacao() {
+  late List<String> _sugestoesObservacoes = [];
+
+  void _mostrarDialogoObservacao() async {
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Adicionar Observação'),
-          content: TextField(
-            controller: _obsController,
-            autofocus: true,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
-            decoration: const InputDecoration(
-              hintText: 'Digite a observação...',
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _obsController,
+                  autofocus: true,
+                  minLines: 1,
+                  maxLines: 6,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    hintText: 'Digite a observação...',
+                  ),
+                  onChanged: (textoDigitado) {
+                    // Isso aqui vai forçar o cameraPronta a desenhar de novo com o texto novo
+                    setState(() {
+                      _observacao = textoDigitado;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Sugestões',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: _sugestoesObservacoes.map((sugestao) {
+                    return ActionChip(
+                      label: Text(sugestao),
+                      onPressed: () {
+                        setState(() {
+                          _obsController.text = sugestao;
+                          _observacao = sugestao;
+                          // Seleciona o final do texto.
+                          _obsController.selection = TextSelection.fromPosition(
+                            TextPosition(offset: _obsController.text.length),
+                          );
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
-            onChanged: (textoDigitado) {
-              // Isso aqui vai forçar o cameraPronta a desenhar de novo com o texto novo
-              setState(() {
-                _observacao = textoDigitado;
-              });
-            },
           ),
+
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
+              onPressed: () async {
+                if (_obsController.text.isNotEmpty) {
+                  String text = _obsController.text.trim();
+
+                  setState(() {
+                    if (!_sugestoesObservacoes.contains(text)) {
+                      if (_sugestoesObservacoes.length >= 5) {
+                        _sugestoesObservacoes.removeAt(0);
+                      }
+                      _sugestoesObservacoes.add(text);
+                    }
+                  });
+                  await preferences.setStringList(
+                    'sugestoesObservacoes',
+                    _sugestoesObservacoes,
+                  );
+                }
+                if (!context.mounted) return;
+                Navigator.pop(dialogContext);
+              },
               child: const Text('Pronto'),
             ),
           ],
