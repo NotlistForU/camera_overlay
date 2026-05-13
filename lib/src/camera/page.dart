@@ -43,7 +43,9 @@ class CameraOverlay extends StatefulWidget {
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
   final bool temMiniMapa;
+  final bool preencherLacunas;
   final VoidCallback? onAbrirGaleria;
+  final VoidCallback? onAbrirConfig;
 
   /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
   ///
@@ -62,8 +64,10 @@ class CameraOverlay extends StatefulWidget {
     this.temBotaoGoogleMaps = true,
     this.temBotaoGaleria = false,
     this.temMiniMapa = true,
+    this.preencherLacunas = false,
     required this.onFotoFinal,
     this.onAbrirGaleria,
+    this.onAbrirConfig,
     this.anguloRotacaoDireita = -90,
     this.anguloRotacaoEsquerda = 90,
   });
@@ -94,11 +98,13 @@ class _CameraState extends State<CameraOverlay> {
   final TextEditingController _obsController = TextEditingController();
 
   late bool _exibirMiniMapa;
+  late bool _preencherLacunas;
 
   @override
   void initState() {
     super.initState();
     _exibirMiniMapa = widget.temMiniMapa;
+    _preencherLacunas = widget.preencherLacunas;
     _carregarPreferencias();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _initFluxo();
@@ -140,6 +146,7 @@ class _CameraState extends State<CameraOverlay> {
   void _carregarPreferencias() async {
     final preferencias = await SharedPreferences.getInstance();
     setState(() {
+      _preencherLacunas = preferencias.getBool('preencherLacunas') ?? false;
       _exibirMiniMapa = preferencias.getBool('exibirMiniMapa') ?? false;
       _sugestoesObservacoes =
           preferencias.getStringList('sugestoesObservacoes') ?? [];
@@ -505,6 +512,32 @@ class _CameraState extends State<CameraOverlay> {
                       debugPrint(_exibirMiniMapa.toString());
                     },
                   ),
+                  Tooltip(
+                    message:
+                        "Fotos novas usam números de arquivos que foram apagados.",
+                    child: SwitchListTile(
+                      title: const Text("Preencher laucnas"),
+                      value: _preencherLacunas,
+                      onChanged: (bool novoValor) async {
+                        debugPrint('Botão Ativar Prencher Lacunas CLICADO!');
+
+                        await preferences.setBool(
+                          'preencherLacunas',
+                          novoValor,
+                        );
+                        setStateDialog(() {
+                          _preencherLacunas = novoValor;
+                        });
+
+                        if (!mounted) return;
+
+                        setState(() {
+                          _preencherLacunas = novoValor;
+                        });
+                      },
+                    ),
+                  ),
+
                   // SwitchListTile(
                   //   title: const Text('Ativar Overlay'),
                   //   value: _overlayAtivo,
