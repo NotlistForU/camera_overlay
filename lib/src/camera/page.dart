@@ -43,10 +43,8 @@ class CameraOverlay extends StatefulWidget {
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
   final bool temMiniMapa;
-  final bool preencherLacunas;
   final VoidCallback? onAbrirGaleria;
   final Future<void> Function(bool)? onMiniMapaChanged;
-  final Future<void> Function(bool)? onPreencherLacunasChanged;
 
   /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
   ///
@@ -59,19 +57,20 @@ class CameraOverlay extends StatefulWidget {
   final int anguloRotacaoEsquerda;
   final Future<void> Function(Uint8List bytes, model.Localizacao? localizacao)
   onFotoFinal;
+
+  final List<Widget>? configsExtras;
   const CameraOverlay({
     super.key,
     this.titulo = 'Câmera',
     this.temBotaoGoogleMaps = true,
     this.temBotaoGaleria = false,
     this.temMiniMapa = true,
-    this.preencherLacunas = false,
-    this.onPreencherLacunasChanged,
     this.onMiniMapaChanged,
     required this.onFotoFinal,
     this.onAbrirGaleria,
     this.anguloRotacaoDireita = -90,
     this.anguloRotacaoEsquerda = 90,
+    this.configsExtras,
   });
   @override
   State<CameraOverlay> createState() => _CameraState();
@@ -106,7 +105,6 @@ class _CameraState extends State<CameraOverlay> {
   void initState() {
     super.initState();
     _exibirMiniMapa = widget.temMiniMapa;
-    _preencherLacunas = widget.preencherLacunas;
     _carregarPreferencias();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _initFluxo();
@@ -478,9 +476,7 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   void _mostrarConfig({
-    bool isTrue = true,
     required Future<void> Function(bool)? onMiniMapaChanged,
-    required Future<void> Function(bool)? onPreencherLacunasChanged,
   }) async {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
 
@@ -522,36 +518,7 @@ class _CameraState extends State<CameraOverlay> {
                       debugPrint(_exibirMiniMapa.toString());
                     },
                   ),
-                  if (isTrue)
-                    Tooltip(
-                      message:
-                          "Fotos novas usam números de arquivos que foram apagados.",
-                      child: SwitchListTile(
-                        title: const Text("Preencher laucnas"),
-                        value: _preencherLacunas,
-                        onChanged: (bool novoValor) async {
-                          debugPrint('Botão Ativar Prencher Lacunas CLICADO!');
-
-                          await preferences.setBool(
-                            'preencherLacunas',
-                            novoValor,
-                          );
-
-                          if (onPreencherLacunasChanged != null)
-                            await onPreencherLacunasChanged(novoValor);
-
-                          setStateDialog(() {
-                            _preencherLacunas = novoValor;
-                          });
-
-                          if (!mounted) return;
-
-                          setState(() {
-                            _preencherLacunas = novoValor;
-                          });
-                        },
-                      ),
-                    ),
+                  if (widget.configsExtras != null) ...widget.configsExtras!,
 
                   // SwitchListTile(
                   //   title: const Text('Ativar Overlay'),
@@ -617,11 +584,8 @@ class _CameraState extends State<CameraOverlay> {
               localizacaoAtual: localizacaoAtual,
               observacao: _observacao,
               onAddObservacao: _mostrarDialogoObservacao,
-              onConfig: () => _mostrarConfig(
-                isTrue: _preencherLacunas,
-                onMiniMapaChanged: widget.onMiniMapaChanged,
-                onPreencherLacunasChanged: widget.onPreencherLacunasChanged,
-              ),
+              onConfig: () =>
+                  _mostrarConfig(onMiniMapaChanged: widget.onMiniMapaChanged),
             );
           },
         );
