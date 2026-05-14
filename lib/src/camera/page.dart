@@ -478,7 +478,7 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   void _mostrarConfig({
-    bool isTrue = false,
+    bool isTrue = true,
     required Future<void> Function(bool)? onMiniMapaChanged,
     required Future<void> Function(bool)? onPreencherLacunasChanged,
   }) async {
@@ -505,8 +505,9 @@ class _CameraState extends State<CameraOverlay> {
                       debugPrint('Botão Ativar Minimapa CLICADO!');
 
                       await preferences.setBool('exibirMiniMapa', novoValor);
-                      if (onMiniMapaChanged != null)
+                      if (onMiniMapaChanged != null) {
                         await onMiniMapaChanged(novoValor);
+                      }
 
                       setStateDialog(() {
                         _exibirMiniMapa =
