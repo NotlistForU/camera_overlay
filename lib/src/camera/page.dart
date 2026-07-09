@@ -221,7 +221,7 @@ class _CameraState extends State<CameraOverlay> {
 
       final image = await boundary.toImage(pixelRatio: 1);
       print(
-        "pixelRatio: 2 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+        "pixelRatio: 1 -> ${DateTime.now().difference(inicio).inMilliseconds}",
       );
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       print(
@@ -233,12 +233,14 @@ class _CameraState extends State<CameraOverlay> {
       );
 
       if (_turns != 0.0) {
+        final swCompute = Stopwatch()..start();
         finalBytes = await compute(_girarPrintBackground, {
           'bytes': finalBytes,
           'turns': _turns,
           'anguloDireita': widget.anguloRotacaoDireita,
           'anguloEsquerda': widget.anguloRotacaoEsquerda,
         });
+        print("compute: ${swCompute.elapsedMilliseconds}ms");
       }
       final sw = Stopwatch()..start();
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
