@@ -191,7 +191,6 @@ class _CameraState extends State<CameraOverlay> {
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
-
       setState(() {
         _tirandoFoto = false;
       });
@@ -204,7 +203,7 @@ class _CameraState extends State<CameraOverlay> {
           _repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
 
-      final image = await boundary.toImage(pixelRatio: 2);
+      final image = await boundary.toImage(pixelRatio: 1);
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       Uint8List finalBytes = byteData!.buffer.asUint8List();
 
