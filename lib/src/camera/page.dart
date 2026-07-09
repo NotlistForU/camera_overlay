@@ -215,8 +215,9 @@ class _CameraState extends State<CameraOverlay> {
           'anguloEsquerda': widget.anguloRotacaoEsquerda,
         });
       }
-
+      final sw = Stopwatch()..start();
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
+      print("onFotoFinal levou ${sw.elapsedMilliseconds}ms");
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();
