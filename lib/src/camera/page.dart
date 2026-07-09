@@ -178,19 +178,31 @@ class _CameraState extends State<CameraOverlay> {
       setState(() {
         _tirandoFoto = true;
       });
+      final inicio = DateTime.now();
       final XFile xfile = await _controller!.takePicture();
+      print(
+        "takePicture: ${DateTime.now().difference(inicio).inMilliseconds}ms",
+      );
+
       final File file = File(xfile.path);
       setState(() {
         _fotoTemporaria = file;
         triggerFeedback();
       });
+      final salvar = DateTime.now();
       await salvarFotoFinal();
+      print(
+        "salvarFotoFinal: ${DateTime.now().difference(salvar).inMilliseconds}ms",
+      );
+
+      print("TOTAL: ${DateTime.now().difference(inicio).inMilliseconds}ms");
       setState(() {
         _tirandoFoto = false;
       });
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
+
       setState(() {
         _tirandoFoto = false;
       });
@@ -199,13 +211,26 @@ class _CameraState extends State<CameraOverlay> {
 
   Future<void> salvarFotoFinal() async {
     try {
+      final inicio = DateTime.now();
       final boundary =
           _repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
+      print(
+        " _repaintKey: 1 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
 
       final image = await boundary.toImage(pixelRatio: 1);
+      print(
+        "pixelRatio: 2 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
       final byteData = await image.toByteData(format: ImageByteFormat.png);
+      print(
+        "ImageByteFormat: 3 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
       Uint8List finalBytes = byteData!.buffer.asUint8List();
+      print(
+        "asUint8List: 4 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
 
       if (_turns != 0.0) {
         finalBytes = await compute(_girarPrintBackground, {
@@ -215,14 +240,19 @@ class _CameraState extends State<CameraOverlay> {
           'anguloEsquerda': widget.anguloRotacaoEsquerda,
         });
       }
-      final sw = Stopwatch()..start();
+
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
-      print("onFotoFinal levou ${sw.elapsedMilliseconds}ms");
+      print(
+        "onFotoFinal: 5 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();
         debugPrint('Foto temporaria deletada');
       }
+      print(
+        "_fotoTemporaria: 6 -> ${DateTime.now().difference(inicio).inMilliseconds}",
+      );
       setState(() {
         _fotoTemporaria = null;
       });
