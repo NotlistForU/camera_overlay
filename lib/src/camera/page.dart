@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
+import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
@@ -203,16 +204,13 @@ class _CameraState extends State<CameraOverlay> {
   Future<void> salvarFotoFinal() async {
     try {
       final inicio = DateTime.now();
-      Uint8List finalBytes = await _fotoTemporaria!.readAsBytes();
-      if (_turns != 0.0) {
-        final swCompute = Stopwatch()..start();
-        finalBytes = await compute(_girarPrintBackground, {
-          'bytes': finalBytes,
-          'turns': _turns,
-          'anguloDireita': widget.anguloRotacaoDireita,
-          'anguloEsquerda': widget.anguloRotacaoEsquerda,
-        });
-      }
+
+      // TESTE TEMPORÁRIO — sobrescreve o fluxo normal pra validar o overlay
+      Uint8List finalBytes = await testarOverlay();
+
+      // (deixe o bloco de rotação comentado por enquanto, só pra isolar o teste do overlay)
+      // if (_turns != 0.0) { ... }
+
       final sw = Stopwatch()..start();
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
@@ -227,6 +225,26 @@ class _CameraState extends State<CameraOverlay> {
       _erro = e.toString();
       _setState(CameraStatus.erro);
     }
+  }
+
+  Future<Uint8List> testarOverlay() async {
+    // Pega uma foto já tirada (ajuste o caminho pra uma foto real que exista no seu dispositivo/emulador)
+    final bytes = await _fotoTemporaria!
+        .readAsBytes(); // ou qualquer File já existente
+    final imagem = img.decodeImage(bytes)!;
+
+    desenharTextoComContorno(
+      imagem,
+      'Lat: -8.123456\nLog: -63.123456\nAlt: 120.50 m\n27/07/2026 14:30:00',
+      fonte: img.arial48,
+      x: 20,
+      y:
+          imagem.height -
+          220, // canto inferior esquerdo, ajuste conforme necessário
+    );
+
+    final resultado = img.encodePng(imagem);
+    return resultado;
   }
 
   static Future<Uint8List> _girarPrintBackground(
