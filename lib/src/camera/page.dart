@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
-import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
@@ -204,14 +203,21 @@ class _CameraState extends State<CameraOverlay> {
   Future<void> salvarFotoFinal() async {
     try {
       final inicio = DateTime.now();
+      Uint8List finalBytes = await _fotoTemporaria!.readAsBytes();
+      if (_turns != 0.0) {
+        finalBytes = await compute(_girarPrintBackground, {
+          'bytes': finalBytes,
+          'turns': _turns,
+          'anguloDireita': widget.anguloRotacaoDireita,
+          'anguloEsquerda': widget.anguloRotacaoEsquerda,
+        });
+      }
 
-      // TESTE TEMPORÁRIO — sobrescreve o fluxo normal pra validar o overlay
-      Uint8List finalBytes = await testarOverlay();
-
-      // (deixe o bloco de rotação comentado por enquanto, só pra isolar o teste do overlay)
-      // if (_turns != 0.0) { ... }
-
-      final sw = Stopwatch()..start();
+      finalBytes = await compute(_desenharOverlayBackground, {
+        'bytes': finalBytes,
+        'texto':
+            'Lat: -8.123456\nLog: -63.123456\nAlt: 120.50 m\n27/07/2026 14:30:00',
+      });
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
@@ -227,24 +233,63 @@ class _CameraState extends State<CameraOverlay> {
     }
   }
 
-  Future<Uint8List> testarOverlay() async {
-    // Pega uma foto já tirada (ajuste o caminho pra uma foto real que exista no seu dispositivo/emulador)
-    final bytes = await _fotoTemporaria!
-        .readAsBytes(); // ou qualquer File já existente
+  void _desenharTextoComContorno(
+    img.Image imagem,
+    String texto, {
+    required img.BitmapFont fonte,
+    required int x,
+    required int y,
+  }) {
+    final deslocamentos = [
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [1, 0],
+      [-1, 1],
+      [0, 1],
+      [1, 1],
+    ];
+
+    for (final d in deslocamentos) {
+      img.drawString(
+        imagem,
+        texto,
+        font: fonte,
+        x: x + d[0],
+        y: y + d[1],
+        color: img.ColorRgb8(0, 0, 0),
+      );
+    }
+
+    img.drawString(
+      imagem,
+      texto,
+      font: fonte,
+      x: x,
+      y: y,
+      color: img.ColorRgb8(255, 255, 255),
+    );
+  }
+
+  // Roda em background (isolate) — decodifica, desenha o texto, e codifica em JPEG
+  Future<Uint8List> _desenharOverlayBackground(
+    Map<String, dynamic> dados,
+  ) async {
+    final Uint8List bytes = dados['bytes'];
+    final String texto = dados['texto'];
+
     final imagem = img.decodeImage(bytes)!;
 
-    desenharTextoComContorno(
+    _desenharTextoComContorno(
       imagem,
-      'Lat: -8.123456\nLog: -63.123456\nAlt: 120.50 m\n27/07/2026 14:30:00',
+      texto,
       fonte: img.arial48,
       x: 20,
-      y:
-          imagem.height -
-          220, // canto inferior esquerdo, ajuste conforme necessário
+      y: imagem.height - 220,
     );
 
-    final resultado = img.encodePng(imagem);
-    return resultado;
+    return img.encodeJpg(imagem, quality: 90); // JPEG em vez de PNG
   }
 
   static Future<Uint8List> _girarPrintBackground(
