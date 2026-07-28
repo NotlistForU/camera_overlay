@@ -148,7 +148,7 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   Future<void> _carregarFonte() async {
-    final data = await rootBundle.load('assets/fonts/roboto_bold.zip');
+    final data = await rootBundle.load('assets/fonts/Roboto.zip');
     _fonte = img.BitmapFont.fromZip(data.buffer.asUint8List());
   }
 
@@ -187,14 +187,12 @@ class _CameraState extends State<CameraOverlay> {
       setState(() {
         _tirandoFoto = true;
       });
-      final inicio = DateTime.now();
       final XFile xfile = await _controller!.takePicture();
       final File file = File(xfile.path);
       setState(() {
         _fotoTemporaria = file;
         triggerFeedback();
       });
-      final salvar = DateTime.now();
       await salvarFotoFinal();
       setState(() {
         _tirandoFoto = false;
