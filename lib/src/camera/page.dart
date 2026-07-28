@@ -102,10 +102,13 @@ class _CameraState extends State<CameraOverlay> {
   late bool _exibirMiniMapa;
   late bool _preencherLacunas;
 
+  late img.BitmapFont _fonte;
+
   @override
   void initState() {
     super.initState();
     _exibirMiniMapa = widget.temMiniMapa;
+    _carregarFonte();
     _carregarPreferencias();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _initFluxo();
@@ -142,6 +145,11 @@ class _CameraState extends State<CameraOverlay> {
     sub.cancel();
     _controller?.dispose();
     super.dispose();
+  }
+
+  Future<void> _carregarFonte() async {
+    final data = await rootBundle.load('assets/fonts/roboto_bold.zip');
+    _fonte = img.BitmapFont.fromZip(data.buffer.asUint8List());
   }
 
   void _carregarPreferencias() async {
@@ -218,10 +226,7 @@ class _CameraState extends State<CameraOverlay> {
       if (_observacao.isNotEmpty) {
         overlay += '\nObs: $_observacao';
       }
-      finalBytes = await compute(_desenharOverlayBackground, {
-        'bytes': finalBytes,
-        'texto': overlay,
-      });
+      finalBytes = _desenharOverlay(finalBytes, overlay, _fonte);
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
@@ -277,14 +282,13 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   // Roda em background (isolate) — decodifica, desenha o texto, e codifica em JPEG
-  static Future<Uint8List> _desenharOverlayBackground(
-    Map<String, dynamic> dados,
-  ) async {
-    final Uint8List bytes = dados['bytes'];
-    final String texto = dados['texto'];
-
+  Uint8List _desenharOverlay(
+    Uint8List bytes,
+    String texto,
+    img.BitmapFont fonte,
+  ) {
     final imagem = img.decodeImage(bytes)!;
-    final fonte = img.arial48;
+    final fonte = _fonte;
     final numeroDeLinhas = texto.split('\n').length;
     const espacamentoEntreLinhas = 8;
     final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
@@ -295,7 +299,9 @@ class _CameraState extends State<CameraOverlay> {
 
     _desenharTextoComContorno(imagem, texto, fonte: fonte, x: 20, y: y);
 
-    return img.encodeJpg(imagem, quality: 90); // JPEG em vez de PNG
+    return Uint8List.fromList(
+      img.encodeJpg(imagem, quality: 90),
+    ); // JPEG em vez de PNG
   }
 
   static Future<Uint8List> _girarPrintBackground(
