@@ -39,6 +39,8 @@ import 'widget/bottom_bar.dart' as widgets;
 
 import 'permissoes.dart' as permissao;
 
+import 'package:archive/archive.dart';
+
 class CameraOverlay extends StatefulWidget {
   final String titulo;
   final bool temBotaoGoogleMaps;
@@ -149,18 +151,26 @@ class _CameraState extends State<CameraOverlay> {
 
   Future<void> _carregarFonte() async {
     try {
-      debugPrint("Iniciando carregamento da fonte...");
-
       final data = await rootBundle.load(
         'packages/camera_overlay/assets/fonts/Roboto.zip',
       );
 
-      _fonte = img.BitmapFont.fromZip(data.buffer.asUint8List());
+      final bytes = data.buffer.asUint8List();
 
-      debugPrint("Fonte carregada!");
+      debugPrint('ZIP possui ${bytes.length} bytes');
+
+      final archive = ZipDecoder().decodeBytes(bytes);
+
+      for (final file in archive) {
+        debugPrint('Arquivo no zip: ${file.name}');
+      }
+
+      _fonte = img.BitmapFont.fromZip(bytes);
+
+      debugPrint('Fonte carregada!');
     } catch (e, s) {
-      debugPrint("Erro ao carregar fonte: $e");
-      debugPrint("$s");
+      debugPrint(e.toString());
+      debugPrint(s.toString());
     }
   }
 
