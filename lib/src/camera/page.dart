@@ -148,8 +148,20 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   Future<void> _carregarFonte() async {
-    final data = await rootBundle.load('assets/fonts/Roboto.zip');
-    _fonte = img.BitmapFont.fromZip(data.buffer.asUint8List());
+    try {
+      debugPrint("Iniciando carregamento da fonte...");
+
+      final data = await rootBundle.load(
+        'packages/camera_overlay/assets/fonts/Roboto.zip',
+      );
+
+      _fonte = img.BitmapFont.fromZip(data.buffer.asUint8List());
+
+      debugPrint("Fonte carregada!");
+    } catch (e, s) {
+      debugPrint("Erro ao carregar fonte: $e");
+      debugPrint("$s");
+    }
   }
 
   void _carregarPreferencias() async {
@@ -289,7 +301,7 @@ class _CameraState extends State<CameraOverlay> {
     img.BitmapFont fonte,
   ) {
     final imagem = img.decodeImage(bytes)!;
-    final fonte = _fonte;
+
     final numeroDeLinhas = texto.split('\n').length;
     const espacamentoEntreLinhas = 8;
     final alturaLinha = fonte!.lineHeight + espacamentoEntreLinhas;
