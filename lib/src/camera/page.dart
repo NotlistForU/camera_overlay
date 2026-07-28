@@ -102,7 +102,7 @@ class _CameraState extends State<CameraOverlay> {
   late bool _exibirMiniMapa;
   late bool _preencherLacunas;
 
-  late img.BitmapFont _fonte;
+  img.BitmapFont? _fonte;
 
   @override
   void initState() {
@@ -224,7 +224,10 @@ class _CameraState extends State<CameraOverlay> {
       if (_observacao.isNotEmpty) {
         overlay += '\nObs: $_observacao';
       }
-      finalBytes = _desenharOverlay(finalBytes, overlay, _fonte);
+      if (_fonte == null) {
+        return;
+      }
+      finalBytes = _desenharOverlay(finalBytes, overlay, _fonte!);
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
@@ -289,7 +292,7 @@ class _CameraState extends State<CameraOverlay> {
     final fonte = _fonte;
     final numeroDeLinhas = texto.split('\n').length;
     const espacamentoEntreLinhas = 8;
-    final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
+    final alturaLinha = fonte!.lineHeight + espacamentoEntreLinhas;
     final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
 
     const margemInferior = 30; // distância da borda de baixo da foto
