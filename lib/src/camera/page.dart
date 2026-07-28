@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
+import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
@@ -202,7 +203,6 @@ class _CameraState extends State<CameraOverlay> {
 
   Future<void> salvarFotoFinal() async {
     try {
-      final inicio = DateTime.now();
       Uint8List finalBytes = await _fotoTemporaria!.readAsBytes();
       if (_turns != 0.0) {
         finalBytes = await compute(_girarPrintBackground, {
@@ -213,10 +213,14 @@ class _CameraState extends State<CameraOverlay> {
         });
       }
 
+      String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+
+      if (_observacao.isNotEmpty) {
+        overlay += '\nObs: $_observacao';
+      }
       finalBytes = await compute(_desenharOverlayBackground, {
         'bytes': finalBytes,
-        'texto':
-            'Lat: -8.123456\nLog: -63.123456\nAlt: 120.50 m\n27/07/2026 14:30:00',
+        'texto': overlay,
       });
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
