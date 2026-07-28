@@ -284,14 +284,16 @@ class _CameraState extends State<CameraOverlay> {
     final String texto = dados['texto'];
 
     final imagem = img.decodeImage(bytes)!;
+    final fonte = img.arial48;
+    final numeroDeLinhas = texto.split('\n').length;
+    const espacamentoEntreLinhas = 8;
+    final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
+    final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
 
-    _desenharTextoComContorno(
-      imagem,
-      texto,
-      fonte: img.arial48,
-      x: 20,
-      y: imagem.height - 220,
-    );
+    const margemInferior = 30; // distância da borda de baixo da foto
+    final y = imagem.height - alturaTotalDoTexto - margemInferior;
+
+    _desenharTextoComContorno(imagem, texto, fonte: fonte, x: 20, y: y);
 
     return img.encodeJpg(imagem, quality: 90); // JPEG em vez de PNG
   }
