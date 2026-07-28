@@ -233,7 +233,7 @@ class _CameraState extends State<CameraOverlay> {
     }
   }
 
-  void _desenharTextoComContorno(
+  static void _desenharTextoComContorno(
     img.Image imagem,
     String texto, {
     required img.BitmapFont fonte,
@@ -273,7 +273,7 @@ class _CameraState extends State<CameraOverlay> {
   }
 
   // Roda em background (isolate) — decodifica, desenha o texto, e codifica em JPEG
-  Future<Uint8List> _desenharOverlayBackground(
+  static Future<Uint8List> _desenharOverlayBackground(
     Map<String, dynamic> dados,
   ) async {
     final Uint8List bytes = dados['bytes'];
