@@ -152,7 +152,7 @@ class _CameraState extends State<CameraOverlay> {
   Future<void> _carregarFonte() async {
     try {
       final data = await rootBundle.load(
-        'packages/camera_overlay/assets/fonts/Roboto.zip',
+        'packages/camera_overlay/assets/fonts/RobotoBold.zip',
       );
 
       final bytes = data.buffer.asUint8List();
@@ -247,8 +247,10 @@ class _CameraState extends State<CameraOverlay> {
         overlay += '\nObs: $_observacao';
       }
       if (_fonte == null) {
+        debugPrint("_fonte tava nulla.....");
         return;
       }
+      debugPrint("Fonte nao estava nulla....");
       finalBytes = _desenharOverlay(finalBytes, overlay, _fonte!);
       await widget.onFotoFinal(finalBytes, localizacaoAtual);
 
