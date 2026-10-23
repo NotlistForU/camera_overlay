@@ -58,7 +58,11 @@ class CameraOverlay extends StatefulWidget {
   ///
   /// O padrão é `90`. Se a foto sair invertida, tente passar `-90`.
   final int anguloRotacaoEsquerda;
-  final Future<void> Function(Uint8List bytes, model.Localizacao? localizacao)
+  final Future<void> Function(
+    Uint8List bytes,
+    model.Localizacao? localizacao,
+    String? observacoes,
+  )
   onFotoFinal;
 
   final List<Widget>? configsExtras;
@@ -252,7 +256,7 @@ class _CameraState extends State<CameraOverlay> {
       }
       debugPrint("Fonte nao estava nulla....");
       finalBytes = _desenharOverlay(finalBytes, overlay, _fonte!);
-      await widget.onFotoFinal(finalBytes, localizacaoAtual);
+      await widget.onFotoFinal(finalBytes, localizacaoAtual, _observacao);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
         await _fotoTemporaria!.delete();

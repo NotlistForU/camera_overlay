@@ -30,6 +30,9 @@ class CameraOverlayTeste01 extends StatefulWidget {
 }
 
 class _CameraOverlayTeste01State extends State<CameraOverlayTeste01> {
+  bool preencherLacunas = false;
+  Future<void> salvarFotoDaMissao({required bool prencherLacunas}) async {}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,8 +49,9 @@ class _CameraOverlayTeste01State extends State<CameraOverlayTeste01> {
                   temBotaoGoogleMaps: true,
                   temBotaoGaleria: true,
                   temMiniMapa: true,
-                  onFotoFinal: (bytes, localizacao) async {
-                    debugPrint("Foto Capturada");
+
+                  onFotoFinal: (bytes, localizacao, observacao) async {
+                    debugPrint("Foto Capturada $preencherLacunas");
                   },
                 ),
               ),

@@ -32,6 +32,7 @@ Widget cameraPronta({
   required VoidCallback onConfig,
 }) {
   String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+
   if (observacao.isNotEmpty) {
     overlay += '\nObs: $observacao';
   }
