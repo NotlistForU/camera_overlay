@@ -1,80 +1,92 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
 # camera_overlay 📷🧩
 
-Um pacote Flutter para captura de fotos utilizando a câmera do dispositivo com **overlay customizável** sobre o preview, ideal para aplicações que precisam de enquadramento guiado, marcações visuais ou validação visual antes da captura.
+Um pacote Flutter para captura de fotos utilizando a câmera do dispositivo, com informações de localização, observações e recursos visuais sobre o preview.
 
----
+Ideal para aplicações que precisam de registro fotográfico com informações geográficas e enquadramento guiado.
 
 ## ✨ Funcionalidades
 
-- Preview de câmera usando o plugin oficial `camera`
-- Suporte a **overlay customizado** (widgets sobre a câmera)
-- Captura de imagem respeitando o overlay exibido
-- Estrutura desacoplada para fácil reutilização em outros projetos
-- Compatível com Android e iOS
-
----
+- Preview de câmera utilizando o plugin oficial `camera`.
+- Captura de imagens com informações de localização (GPS).
+- Inclusão de observações na imagem capturada.
+- Correção da rotação da imagem conforme a orientação do dispositivo.
+- Mini mapa interativo com localização atual.
+- Atalho para abrir a localização no Google Maps.
+- Acesso à galeria do dispositivo.
+- Personalização dos recursos disponíveis na interface.
 
 ## 📦 Instalação
 
-Adicione no seu `pubspec.yaml`:
+Adicione a dependência ao seu `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  camera_overlay:
-    git:
-      url: https://github.com/NotlistForU/camera_overlay.git
-      ref: main
-````
-## 🚀 Exemplo
-| Parâmetro            | Tipo       | Descrição                               |
-| -------------------- | ---------- | --------------------------------------- |
-| `temBotaoGaleria`    | `bool`     | Exibe botão para abrir a galeria        |
-| `temBotaoGoogleMaps` | `bool`     | Exibe botão para abrir o Google Maps    |
-| `temMiniMapa`        | `bool`     | Exibe mini mapa no overlay              |
-| `onFotoFinal`        | `Function` | Callback chamado após a captura da foto |
+  camera_overlay: ^0.0.2
+```
 
-````
-builder: (_) => CameraOverlay(
-                  temBotaoGaleria: false,
-                  temBotaoGoogleMaps: false,
-                  temMiniMapa: false,
-                  onFotoFinal: (bytes, localizacao) async {
-                    // bytes -> imagem capturada
-                    // localizacao -> dados de localização (se disponível)
+Execute:
 
-                    if (bytes == null) return;
+```bash
+flutter pub get
+```
 
-                    // Exemplo: salvar imagem localmente,
-                    // enviar para API ou processar os bytes
-                  },
-                ),
-onFotoFinal: (Uint8List? bytes, dynamic localizacao) async {
-  if (bytes == null) return;
+## 🚀 Utilização
 
-  // bytes: imagem capturada pela câmera
-  // localizacao: informações de localização associadas à captura (se habilitado)
+Importe o pacote:
 
-  // Exemplo de uso:
-  // - salvar arquivo
-  // - enviar para backend
-  // - processar imagem
-}
-````
+```dart
+import 'package:camera_overlay/camera_overlay.dart';
+```
+
+Utilize o widget `CameraOverlay`:
+
+```dart
+CameraOverlay(
+  temBotaoGaleria: false,
+  temBotaoGoogleMaps: true,
+  temMiniMapa: true,
+
+  onFotoFinal: (bytes, localizacao, observacoes) async {
+    // bytes: imagem capturada (Uint8List)
+    // localizacao: informações de localização (Localizacao?)
+    // observacoes: texto informado pelo usuário (String?)
+
+    // Exemplo:
+    // Salvar a imagem localmente,
+    // enviar para uma API ou processar os dados.
+  },
+)
+```
+
+## ⚙️ Parâmetros
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `titulo` | `String` | Título exibido na câmera. |
+| `temBotaoGaleria` | `bool` | Exibe o botão para abrir a galeria. |
+| `temBotaoGoogleMaps` | `bool` | Exibe o botão para abrir o Google Maps. |
+| `temMiniMapa` | `bool` | Habilita o mini mapa. |
+| `onFotoFinal` | `Function` | Callback executado após a captura e processamento da foto. |
+| `onAbrirGaleria` | `VoidCallback?` | Callback para abertura da galeria. |
+| `onMiniMapaChanged` | `Function(bool)?` | Notifica alterações na exibição do mini mapa. |
+| `anguloRotacaoDireita` | `int` | Ângulo de correção da foto quando o dispositivo gira para a direita. |
+| `anguloRotacaoEsquerda` | `int` | Ângulo de correção da foto quando o dispositivo gira para a esquerda. |
+| `configsExtras` | `List<Widget>?` | Widgets adicionais exibidos nas configurações. |
+
+### Callback `onFotoFinal`
+
+O callback recebe três parâmetros:
+
+- `bytes`: imagem final processada, em formato `Uint8List`.
+- `localizacao`: objeto `Localizacao?`, contendo latitude, longitude, altitude e data.
+- `observacoes`: observações informadas durante a captura, quando disponíveis.
+
 ## 📷 Exemplo visual
-Mini-mapa interativo, que permite se movimentar pelo mapa e aplicar zoom. Se aperta e segurar no minimapa ele redefine a posição dele para a sua posição atual.
+
+Mini mapa interativo, que permite movimentação e zoom. Ao pressionar e segurar o mini mapa, sua posição é redefinida para a localização atual.
 
 ![Exemplo de uso do Camera Overlay](exemploFoto.png)
 
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT.
