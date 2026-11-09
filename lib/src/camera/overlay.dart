@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 import 'package:camera_overlay/src/camera/model/localizacao.dart';
-import 'package:image/image.dart' as img;
 
 extension Overlay on Localizacao {
   String get dados {

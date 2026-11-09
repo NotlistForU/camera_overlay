@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 class Localizacao {
   final double latitude;
   final double longitude;

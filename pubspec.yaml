@@ -1,11 +1,14 @@
 name: camera_overlay
-description: "A new Flutter package project."
+description: "Flutter camera widget with customizable overlay, GPS metadata and optional mini-map."
 version: 0.0.1
-homepage:
+
+homepage: https://github.com/NotlistForU/camera_overlay
+repository: https://github.com/NotlistForU/camera_overlay
+issue_tracker: https://github.com/NotlistForU/camera_overlay/issues
 
 environment:
   sdk: ^3.10.4
-  flutter: ">=1.17.0"
+  flutter: ">=3.38.5"
 
 dependencies:
   flutter:
@@ -17,24 +20,24 @@ dependencies:
   permission_handler: ^12.0.1
 
   # ABRIR NO GOOGLE
-  url_launcher: 6.3.2
+  url_launcher: ^6.3.2
   google_maps_flutter: ^2.14.0
 
   # SALVAR FOTO e LiSTAR FOTO
   photo_manager: ^3.8.3
-  photo_manager_image_provider: 2.2.0
+  photo_manager_image_provider: ^2.2.0
   flutter_staggered_grid_view: ^0.7.0
   photo_view: ^0.15.0
 
   # LOCALIZAÇÃO
-  geolocator: 14.0.2
+  geolocator: ^14.0.2
 
   # FORMATAR DATA/HORA
-  intl: 0.20.2
+  intl: ^0.20.2
 
   # Mini mapa
-  flutter_map: 8.2.2
-  latlong2: 0.9.1
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
 
   # Sensor de gravidade(indentificar rotação do celular)
   sensors_plus: ^7.0.0
@@ -43,6 +46,7 @@ dependencies:
   # Armazenamento local de valores de variaveis.
   shared_preferences: ^2.5.5
   archive: ^4.0.9
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

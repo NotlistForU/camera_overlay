@@ -3,11 +3,8 @@ import 'dart:io' show Platform, File;
 import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -32,10 +29,6 @@ import 'cases/loading.dart' as cases;
 import 'cases/permissao_negada.dart' as cases;
 import 'cases/camera_pronta.dart' as cases;
 import 'cases/erro.dart' as cases;
-
-// IMPORT widgets
-import 'widget/preview.dart' as widgets;
-import 'widget/bottom_bar.dart' as widgets;
 
 import 'permissoes.dart' as permissao;
 
@@ -88,9 +81,7 @@ class _CameraState extends State<CameraOverlay> {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   String? _erro;
-  File? _ultimaFoto;
   File? _fotoTemporaria;
-  File? _fotoAtual;
   double _minZoom = 1.0;
   double _maxZoom = 1.0;
   double _currentZoom = 1.0;
@@ -106,7 +97,6 @@ class _CameraState extends State<CameraOverlay> {
   final TextEditingController _obsController = TextEditingController();
 
   late bool _exibirMiniMapa;
-  late bool _preencherLacunas;
 
   img.BitmapFont? _fonte;
 
@@ -181,7 +171,6 @@ class _CameraState extends State<CameraOverlay> {
   void _carregarPreferencias() async {
     final preferencias = await SharedPreferences.getInstance();
     setState(() {
-      _preencherLacunas = preferencias.getBool('preencherLacunas') ?? false;
       _exibirMiniMapa = preferencias.getBool('exibirMiniMapa') ?? false;
       _sugestoesObservacoes =
           preferencias.getStringList('sugestoesObservacoes') ?? [];
@@ -320,7 +309,7 @@ class _CameraState extends State<CameraOverlay> {
 
     final numeroDeLinhas = texto.split('\n').length;
     const espacamentoEntreLinhas = 8;
-    final alturaLinha = fonte!.lineHeight + espacamentoEntreLinhas;
+    final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
     final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
 
     const margemInferior = 30; // distância da borda de baixo da foto
