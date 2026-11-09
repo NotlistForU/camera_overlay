@@ -1,6 +1,6 @@
 name: camera_overlay
 description: "Flutter camera widget with customizable overlay, GPS metadata and optional mini-map."
-version: 0.0.1
+version: 0.0.2
 
 homepage: https://github.com/NotlistForU/camera_overlay
 repository: https://github.com/NotlistForU/camera_overlay
