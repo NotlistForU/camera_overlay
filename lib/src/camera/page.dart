@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
 import 'package:camera_overlay/src/camera/overlay.dart';
+import 'package:exif/exif.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -35,11 +38,13 @@ import 'permissoes.dart' as permissao;
 import 'package:archive/archive.dart';
 
 class CameraOverlay extends StatefulWidget {
+  final double? lat;
+  final double? lng;
+  final double? alt;
   final String titulo;
   final bool temBotaoGoogleMaps;
   final bool temBotaoGaleria;
   final bool temMiniMapa;
-  final VoidCallback? onAbrirGaleria;
   final Future<void> Function(bool)? onMiniMapaChanged;
 
   /// Ângulo para corrigir a foto quando o celular deitar para a DIREITA.
@@ -61,13 +66,15 @@ class CameraOverlay extends StatefulWidget {
   final List<Widget>? configsExtras;
   const CameraOverlay({
     super.key,
+    this.lat,
+    this.lng,
+    this.alt,
     this.titulo = 'Câmera',
     this.temBotaoGoogleMaps = true,
     this.temBotaoGaleria = false,
     this.temMiniMapa = true,
     this.onMiniMapaChanged,
     required this.onFotoFinal,
-    this.onAbrirGaleria,
     this.anguloRotacaoDireita = -90,
     this.anguloRotacaoEsquerda = 90,
     this.configsExtras,
@@ -192,6 +199,35 @@ class _CameraState extends State<CameraOverlay> {
     });
   }
 
+  Future<void> _onXFileImage() async {
+    if (_tirandoFoto) return;
+
+    setState(() => _tirandoFoto = true);
+
+    try {
+      final XFile? xfile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
+
+      if (xfile == null) return;
+
+      final File file = File(xfile.path);
+
+      setState(() {
+        _fotoTemporaria = file;
+      });
+
+      await salvarFotoFinal();
+    } catch (e) {
+      _erro = e.toString();
+      _setState(CameraStatus.erro);
+    } finally {
+      if (mounted) {
+        setState(() => _tirandoFoto = false);
+      }
+    }
+  }
+
   // flag
   bool _tirandoFoto = false;
   void getTirandofoto() => _tirandoFoto;
@@ -234,7 +270,30 @@ class _CameraState extends State<CameraOverlay> {
         });
       }
 
-      String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+      String? data;
+      String? overlay;
+      String dados = '';
+
+      bool isLatLngNull = true;
+
+      if (widget.lat != null || widget.lng != null || widget.alt != null) {
+        isLatLngNull = false;
+      }
+      if (isLatLngNull) {
+        overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+      } else {
+        data = await lerDataFoto(finalBytes);
+
+        //Keep the string flush against the wall, because the """ counts the indentation, which would leave the text offset when displayed in the overlay.
+        dados =
+            """
+Lat: ${widget.lat!.toStringAsFixed(6)}
+Log: ${widget.lng!.toStringAsFixed(6)}
+Alt: ${widget.alt!.toStringAsFixed(2)} m
+$data
+""";
+        overlay = dados;
+      }
 
       if (_observacao.isNotEmpty) {
         overlay += '\nObs: $_observacao';
@@ -257,6 +316,24 @@ class _CameraState extends State<CameraOverlay> {
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
+    }
+  }
+
+  Future<String?> lerDataFoto(Uint8List bytes) async {
+    final exif = await readExifFromBytes(bytes);
+
+    final data = exif['EXIF DateTimeOriginal']?.printable;
+
+    if (data == null || data.isEmpty) return null;
+
+    try {
+      final DateTime dataFoto = DateFormat(
+        'yyyy:MM:dd HH:mm:ss',
+      ).parseStrict(data);
+
+      return DateFormat('dd/MM/yyyy HH:mm:ss').format(dataFoto);
+    } catch (e) {
+      return null;
     }
   }
 
@@ -669,7 +746,7 @@ class _CameraState extends State<CameraOverlay> {
               repaintKey: _repaintKey,
               onFoto: _onFoto,
               onMaps: _onMaps,
-              onAbrirGaleria: widget.onAbrirGaleria,
+              onAbrirGaleria: _onXFileImage,
               podeAbrirMaps: podeAbrir,
               localizacaoAtual: localizacaoAtual,
               observacao: _observacao,
