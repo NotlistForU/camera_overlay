@@ -287,10 +287,10 @@ class _CameraState extends State<CameraOverlay> {
         //Keep the string flush against the wall, because the """ counts the indentation, which would leave the text offset when displayed in the overlay.
         dados =
             """
-Lat: ${widget.lat!.toStringAsFixed(6)}
-Log: ${widget.lng!.toStringAsFixed(6)}
+Lat: ${widget.lat != null ? widget.lat!.toStringAsFixed(6) : 'Não informado'}
+Log: ${widget.lng != null ? widget.lng!.toStringAsFixed(6) : 'Não informado'}
 Alt: ${widget.alt != null ? '${widget.alt!.toStringAsFixed(2)} m' : 'Não informado'}
-$data
+${data ?? 'Não informado'}
 """;
         overlay = dados;
       }
@@ -384,19 +384,48 @@ $data
   ) {
     final imagem = img.decodeImage(bytes)!;
 
+    // Largura de referência para desenhar o overlay
+    const larguraReferencia = 1920;
+
+    // Calcula as dimensões proporcionais da camada
+    final escala = imagem.width / larguraReferencia;
+    final alturaReferencia = (imagem.height / escala).round();
+
+    // Cria uma camada transparente
+    final camada = img.Image(
+      width: larguraReferencia,
+      height: alturaReferencia,
+      numChannels: 4,
+    );
+
+    img.fill(camada, color: img.ColorRgba8(0, 0, 0, 0));
+
+    // Calcula o posicionamento do texto
     final numeroDeLinhas = texto.split('\n').length;
+
     const espacamentoEntreLinhas = 8;
     final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
     final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
 
-    const margemInferior = 30; // distância da borda de baixo da foto
-    final y = imagem.height - alturaTotalDoTexto - margemInferior;
+    const margemInferior = 30;
 
-    _desenharTextoComContorno(imagem, texto, fonte: fonte, x: 20, y: y);
+    final y = camada.height - alturaTotalDoTexto - margemInferior;
 
-    return Uint8List.fromList(
-      img.encodeJpg(imagem, quality: 90),
-    ); // JPEG em vez de PNG
+    // Desenha o texto na camada transparente
+    _desenharTextoComContorno(camada, texto, fonte: fonte, x: 20, y: y);
+
+    // Redimensiona a camada para acompanhar a fotografia
+    final overlayRedimensionado = img.copyResize(
+      camada,
+      width: imagem.width,
+      height: imagem.height,
+      interpolation: img.Interpolation.linear,
+    );
+
+    // Sobrepõe o texto à fotografia
+    img.compositeImage(imagem, overlayRedimensionado);
+
+    return Uint8List.fromList(img.encodeJpg(imagem, quality: 90));
   }
 
   static Future<Uint8List> _girarPrintBackground(
