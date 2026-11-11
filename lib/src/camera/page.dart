@@ -384,8 +384,16 @@ ${data ?? 'Não informado'}
   ) {
     final imagem = img.decodeImage(bytes)!;
 
+    /**
+ * Referência	Tamanho do overlay
+1920	Original
+1600	20% maior
+1536	25% maior
+1280	50% maior
+ */
+
     // Largura de referência para desenhar o overlay
-    const larguraReferencia = 1920;
+    const larguraReferencia = 1536;
 
     // Calcula as dimensões proporcionais da camada
     final escala = imagem.width / larguraReferencia;
