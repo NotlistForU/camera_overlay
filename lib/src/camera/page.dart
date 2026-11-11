@@ -289,7 +289,7 @@ class _CameraState extends State<CameraOverlay> {
             """
 Lat: ${widget.lat!.toStringAsFixed(6)}
 Log: ${widget.lng!.toStringAsFixed(6)}
-Alt: ${widget.alt!.toStringAsFixed(2)} m
+Alt: ${widget.alt != null ? '${widget.alt!.toStringAsFixed(2)} m' : 'Não informado'}
 $data
 """;
         overlay = dados;
