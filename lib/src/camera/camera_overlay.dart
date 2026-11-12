@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
-import 'package:camera_overlay/src/camera/overlay.dart';
 import 'package:camera_overlay/src/camera/service/foto_service.dart';
-import 'package:exif/exif.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
