@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
 import 'package:camera_overlay/src/camera/overlay.dart';
+import 'package:camera_overlay/src/camera/service/foto_service.dart';
 import 'package:exif/exif.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
@@ -62,6 +63,7 @@ class CameraOverlay extends StatefulWidget {
     String? observacoes,
   )
   onFotoFinal;
+  final VoidCallback? onAbrirGaleria;
 
   final List<Widget>? configsExtras;
   const CameraOverlay({
@@ -75,6 +77,7 @@ class CameraOverlay extends StatefulWidget {
     this.temMiniMapa = true,
     this.onMiniMapaChanged,
     required this.onFotoFinal,
+    this.onAbrirGaleria,
     this.anguloRotacaoDireita = -90,
     this.anguloRotacaoEsquerda = 90,
     this.configsExtras,
@@ -199,270 +202,52 @@ class _CameraState extends State<CameraOverlay> {
     });
   }
 
-  Future<void> _onXFileImage() async {
-    if (_tirandoFoto) return;
-
-    setState(() => _tirandoFoto = true);
-
-    try {
-      final XFile? xfile = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-      );
-
-      if (xfile == null) return;
-
-      final File file = File(xfile.path);
-
-      setState(() {
-        _fotoTemporaria = file;
-      });
-
-      await salvarFotoFinal();
-    } catch (e) {
-      _erro = e.toString();
-      _setState(CameraStatus.erro);
-    } finally {
-      if (mounted) {
-        setState(() => _tirandoFoto = false);
-      }
-    }
-  }
-
   // flag
   bool _tirandoFoto = false;
-  void getTirandofoto() => _tirandoFoto;
   Future<void> _onFoto() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
     if (_tirandoFoto) return;
+
     try {
       setState(() {
         _tirandoFoto = true;
       });
+
       final XFile xfile = await _controller!.takePicture();
       final File file = File(xfile.path);
+
       setState(() {
         _fotoTemporaria = file;
         triggerFeedback();
       });
-      await salvarFotoFinal();
-      setState(() {
-        _tirandoFoto = false;
-      });
-    } catch (e) {
-      _erro = e.toString();
-      _setState(CameraStatus.erro);
 
-      setState(() {
-        _tirandoFoto = false;
-      });
-    }
-  }
+      // Chamada para o FotoService passando os dados da câmera
+      await FotoService.salvarFotoFinal(
+        fotoTemporaria: file,
+        lat: widget.lat,
+        lng: widget.lng,
+        alt: widget.alt,
+        observacao: _observacao,
+        localizacaoAtual: localizacaoAtual,
+        turns: _turns,
+        anguloRotacaoDireita: widget.anguloRotacaoDireita,
+        anguloRotacaoEsquerda: widget.anguloRotacaoEsquerda,
+        onFotoFinal: (bytes, localizacao, obs) =>
+            widget.onFotoFinal(bytes, localizacao, obs),
+      );
 
-  Future<void> salvarFotoFinal() async {
-    try {
-      Uint8List finalBytes = await _fotoTemporaria!.readAsBytes();
-      if (_turns != 0.0) {
-        finalBytes = await compute(_girarPrintBackground, {
-          'bytes': finalBytes,
-          'turns': _turns,
-          'anguloDireita': widget.anguloRotacaoDireita,
-          'anguloEsquerda': widget.anguloRotacaoEsquerda,
-        });
-      }
-
-      String? data;
-      String? overlay;
-      String dados = '';
-
-      bool isLatLngNull = true;
-
-      if (widget.lat != null || widget.lng != null || widget.alt != null) {
-        isLatLngNull = false;
-      }
-      if (isLatLngNull) {
-        overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
-      } else {
-        data = await lerDataFoto(finalBytes);
-
-        //Keep the string flush against the wall, because the """ counts the indentation, which would leave the text offset when displayed in the overlay.
-        dados =
-            """
-Lat: ${widget.lat != null ? widget.lat!.toStringAsFixed(6) : 'Não informado'}
-Log: ${widget.lng != null ? widget.lng!.toStringAsFixed(6) : 'Não informado'}
-Alt: ${widget.alt != null ? '${widget.alt!.toStringAsFixed(2)} m' : 'Não informado'} ${data != null ? '\n$data' : ''}""";
-
-        overlay = dados;
-      }
-
-      if (_observacao.isNotEmpty) {
-        overlay += '\nObs: $_observacao';
-      }
-      if (_fonte == null) {
-        debugPrint("_fonte tava nulla.....");
-        return;
-      }
-      debugPrint("Fonte nao estava nulla....");
-      finalBytes = _desenharOverlay(finalBytes, overlay, _fonte!);
-      await widget.onFotoFinal(finalBytes, localizacaoAtual, _observacao);
-
-      if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
-        await _fotoTemporaria!.delete();
-        debugPrint('Foto temporaria deletada');
-      }
       setState(() {
         _fotoTemporaria = null;
+        _tirandoFoto = false;
       });
     } catch (e) {
       _erro = e.toString();
       _setState(CameraStatus.erro);
+
+      setState(() {
+        _tirandoFoto = false;
+      });
     }
-  }
-
-  Future<String?> lerDataFoto(Uint8List bytes) async {
-    final exif = await readExifFromBytes(bytes);
-
-    final data = exif['EXIF DateTimeOriginal']?.printable;
-
-    if (data == null || data.isEmpty) return null;
-
-    try {
-      final DateTime dataFoto = DateFormat(
-        'yyyy:MM:dd HH:mm:ss',
-      ).parseStrict(data);
-
-      return DateFormat('dd/MM/yyyy HH:mm:ss').format(dataFoto);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static void _desenharTextoComContorno(
-    img.Image imagem,
-    String texto, {
-    required img.BitmapFont fonte,
-    required int x,
-    required int y,
-  }) {
-    final deslocamentos = [
-      [-1, -1],
-      [0, -1],
-      [1, -1],
-      [-1, 0],
-      [1, 0],
-      [-1, 1],
-      [0, 1],
-      [1, 1],
-    ];
-
-    for (final d in deslocamentos) {
-      img.drawString(
-        imagem,
-        texto,
-        font: fonte,
-        x: x + d[0],
-        y: y + d[1],
-        color: img.ColorRgb8(0, 0, 0),
-      );
-    }
-
-    img.drawString(
-      imagem,
-      texto,
-      font: fonte,
-      x: x,
-      y: y,
-      color: img.ColorRgb8(255, 255, 255),
-    );
-  }
-
-  // Roda em background (isolate) — decodifica, desenha o texto, e codifica em JPEG
-  Uint8List _desenharOverlay(
-    Uint8List bytes,
-    String texto,
-    img.BitmapFont fonte,
-  ) {
-    final imagem = img.decodeImage(bytes)!;
-
-    /**
- * Referência	Tamanho do overlay
-1920	Original
-1600	20% maior
-1536	25% maior
-1280	50% maior
- */
-
-    // Largura de referência para desenhar o overlay
-    const larguraReferencia = 1536;
-
-    // Calcula as dimensões proporcionais da camada
-    final escala = imagem.width / larguraReferencia;
-    final alturaReferencia = (imagem.height / escala).round();
-
-    // Cria uma camada transparente
-    final camada = img.Image(
-      width: larguraReferencia,
-      height: alturaReferencia,
-      numChannels: 4,
-    );
-
-    img.fill(camada, color: img.ColorRgba8(0, 0, 0, 0));
-
-    // Calcula o posicionamento do texto
-    final numeroDeLinhas = texto.split('\n').length;
-
-    const espacamentoEntreLinhas = 8;
-    final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
-    final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
-
-    const margemInferior = 30;
-
-    final y = camada.height - alturaTotalDoTexto - margemInferior;
-
-    // Desenha o texto na camada transparente
-    _desenharTextoComContorno(camada, texto, fonte: fonte, x: 20, y: y);
-
-    // Redimensiona a camada para acompanhar a fotografia
-    final overlayRedimensionado = img.copyResize(
-      camada,
-      width: imagem.width,
-      height: imagem.height,
-      interpolation: img.Interpolation.linear,
-    );
-
-    // Sobrepõe o texto à fotografia
-    img.compositeImage(imagem, overlayRedimensionado);
-
-    return Uint8List.fromList(img.encodeJpg(imagem, quality: 90));
-  }
-
-  static Future<Uint8List> _girarPrintBackground(
-    Map<String, dynamic> dados,
-  ) async {
-    final Uint8List bytes = dados['bytes'];
-    final double turns = dados['turns'];
-    final int anguloDireita = dados['anguloDireita'];
-    final int anguloEsquerda = dados['anguloEsquerda'];
-
-    // Decodifica a imagem
-    img.Image? screenshot = img.decodeImage(bytes);
-
-    if (screenshot != null) {
-      img.Image screenshotGirado;
-
-      if (turns == 0.25) {
-        screenshotGirado = img.copyRotate(screenshot, angle: anguloDireita);
-      } else if (turns == -0.25) {
-        screenshotGirado = img.copyRotate(screenshot, angle: anguloEsquerda);
-      } else {
-        screenshotGirado = screenshot;
-      }
-
-      // Transforma de volta em bytes PNG e retorna
-      return img.encodePng(screenshotGirado);
-    }
-
-    // Se der algum erro bizarro, devolve a imagem original
-    return bytes;
   }
 
   Future<bool> podeAbrirMaps() async {
@@ -782,7 +567,7 @@ Alt: ${widget.alt != null ? '${widget.alt!.toStringAsFixed(2)} m' : 'Não inform
               repaintKey: _repaintKey,
               onFoto: _onFoto,
               onMaps: _onMaps,
-              onAbrirGaleria: _onXFileImage,
+              onAbrirGaleria: widget.onAbrirGaleria,
               podeAbrirMaps: podeAbrir,
               localizacaoAtual: localizacaoAtual,
               observacao: _observacao,
