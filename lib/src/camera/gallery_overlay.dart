@@ -51,12 +51,18 @@ class _GalleryOverlayState extends State<GalleryOverlay> {
   Future<void> salvarFotoFinal({File? imagem}) async {
     if (imagem == null) return;
 
+    debugPrint('[GALERIA] Iniciando processamento');
+
     final data = await lerDataFoto(imagem);
     final overlay = montarOverlay(data);
 
     Uint8List finalBytes = await imagem.readAsBytes();
 
+    debugPrint('[GALERIA] Imagem lida: ${finalBytes.length} bytes');
+
     finalBytes = OverlayService.desenharOverlay(finalBytes, overlay, _fonte!);
+
+    debugPrint('[GALERIA] Overlay desenhado: ${finalBytes.length} bytes');
 
     await widget.onImagemGallery(
       finalBytes,
@@ -65,6 +71,8 @@ class _GalleryOverlayState extends State<GalleryOverlay> {
       widget.altitude,
       widget.observacoes,
     );
+
+    debugPrint('[GALERIA] Callback finalizado');
   }
 
   Future<String?> lerDataFoto(File file) async {
