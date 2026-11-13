@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:camera_overlay/camera_overlay.dart';
+import 'package:camera_overlay/main.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {

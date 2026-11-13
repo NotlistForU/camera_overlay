@@ -33,8 +33,6 @@ import 'cases/erro.dart' as cases;
 
 import 'permissoes.dart' as permissao;
 
-import 'package:archive/archive.dart';
-
 class CameraOverlay extends StatefulWidget {
   final String titulo;
   final bool temBotaoGoogleMaps;
