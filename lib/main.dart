@@ -1,3 +1,3 @@
-export 'src/camera/page.dart';
+export 'src/camera/camera_overlay.dart';
 export 'src/camera/model/localizacao.dart';
 export 'src/camera/enum.dart';
