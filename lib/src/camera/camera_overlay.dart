@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform, File;
 import 'package:camera_overlay/src/camera/overlay.dart';
+import 'package:camera_overlay/src/camera/service/overlay_service.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +32,6 @@ import 'cases/camera_pronta.dart' as cases;
 import 'cases/erro.dart' as cases;
 
 import 'permissoes.dart' as permissao;
-
-import 'package:archive/archive.dart';
 
 class CameraOverlay extends StatefulWidget {
   final String titulo;
@@ -128,6 +127,10 @@ class _CameraState extends State<CameraOverlay> {
     });
   }
 
+  Future<void> _carregarFonte() async {
+    _fonte = await OverlayService.carregarFonte();
+  }
+
   @override
   void dispose() {
     _accelSubscription?.cancel();
@@ -141,31 +144,6 @@ class _CameraState extends State<CameraOverlay> {
     sub.cancel();
     _controller?.dispose();
     super.dispose();
-  }
-
-  Future<void> _carregarFonte() async {
-    try {
-      final data = await rootBundle.load(
-        'packages/camera_overlay/assets/fonts/RobotoBold.zip',
-      );
-
-      final bytes = data.buffer.asUint8List();
-
-      debugPrint('ZIP possui ${bytes.length} bytes');
-
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        debugPrint('Arquivo no zip: ${file.name}');
-      }
-
-      _fonte = img.BitmapFont.fromZip(bytes);
-
-      debugPrint('Fonte carregada!');
-    } catch (e, s) {
-      debugPrint(e.toString());
-      debugPrint(s.toString());
-    }
   }
 
   void _carregarPreferencias() async {
@@ -208,7 +186,14 @@ class _CameraState extends State<CameraOverlay> {
         _fotoTemporaria = file;
         triggerFeedback();
       });
-      await salvarFotoFinal();
+
+      String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
+
+      if (_observacao.isNotEmpty) {
+        overlay += '\nObs: $_observacao';
+      }
+
+      await salvarFotoFinal(overlay: overlay);
       setState(() {
         _tirandoFoto = false;
       });
@@ -222,7 +207,7 @@ class _CameraState extends State<CameraOverlay> {
     }
   }
 
-  Future<void> salvarFotoFinal() async {
+  Future<void> salvarFotoFinal({String? overlay}) async {
     try {
       Uint8List finalBytes = await _fotoTemporaria!.readAsBytes();
       if (_turns != 0.0) {
@@ -234,17 +219,13 @@ class _CameraState extends State<CameraOverlay> {
         });
       }
 
-      String overlay = localizacaoAtual?.dados ?? 'Obtendo GPS...';
-
-      if (_observacao.isNotEmpty) {
-        overlay += '\nObs: $_observacao';
+      if (overlay != null && _fonte != null) {
+        finalBytes = OverlayService.desenharOverlay(
+          finalBytes,
+          overlay,
+          _fonte!,
+        );
       }
-      if (_fonte == null) {
-        debugPrint("_fonte tava nulla.....");
-        return;
-      }
-      debugPrint("Fonte nao estava nulla....");
-      finalBytes = _desenharOverlay(finalBytes, overlay, _fonte!);
       await widget.onFotoFinal(finalBytes, localizacaoAtual, _observacao);
 
       if (_fotoTemporaria != null && await _fotoTemporaria!.exists()) {
@@ -258,68 +239,6 @@ class _CameraState extends State<CameraOverlay> {
       _erro = e.toString();
       _setState(CameraStatus.erro);
     }
-  }
-
-  static void _desenharTextoComContorno(
-    img.Image imagem,
-    String texto, {
-    required img.BitmapFont fonte,
-    required int x,
-    required int y,
-  }) {
-    final deslocamentos = [
-      [-1, -1],
-      [0, -1],
-      [1, -1],
-      [-1, 0],
-      [1, 0],
-      [-1, 1],
-      [0, 1],
-      [1, 1],
-    ];
-
-    for (final d in deslocamentos) {
-      img.drawString(
-        imagem,
-        texto,
-        font: fonte,
-        x: x + d[0],
-        y: y + d[1],
-        color: img.ColorRgb8(0, 0, 0),
-      );
-    }
-
-    img.drawString(
-      imagem,
-      texto,
-      font: fonte,
-      x: x,
-      y: y,
-      color: img.ColorRgb8(255, 255, 255),
-    );
-  }
-
-  // Roda em background (isolate) — decodifica, desenha o texto, e codifica em JPEG
-  Uint8List _desenharOverlay(
-    Uint8List bytes,
-    String texto,
-    img.BitmapFont fonte,
-  ) {
-    final imagem = img.decodeImage(bytes)!;
-
-    final numeroDeLinhas = texto.split('\n').length;
-    const espacamentoEntreLinhas = 8;
-    final alturaLinha = fonte.lineHeight + espacamentoEntreLinhas;
-    final alturaTotalDoTexto = numeroDeLinhas * alturaLinha;
-
-    const margemInferior = 30; // distância da borda de baixo da foto
-    final y = imagem.height - alturaTotalDoTexto - margemInferior;
-
-    _desenharTextoComContorno(imagem, texto, fonte: fonte, x: 20, y: y);
-
-    return Uint8List.fromList(
-      img.encodeJpg(imagem, quality: 90),
-    ); // JPEG em vez de PNG
   }
 
   static Future<Uint8List> _girarPrintBackground(
