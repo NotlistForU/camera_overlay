@@ -1,8 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:archive/archive.dart';
-import 'package:camera_overlay/main.dart';
 import 'package:camera_overlay/src/camera/service/overlay_service.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
@@ -40,37 +37,34 @@ class GalleryOverlay extends StatefulWidget {
 class _GalleryOverlayState extends State<GalleryOverlay> {
   img.BitmapFont? _fonte;
 
-  Future<void> _carregarFonte() async {
-    _fonte = await OverlayService.carregarFonte();
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _selecionarImagem();
+      }
+    });
   }
 
   Future<void> salvarFotoFinal({File? imagem}) async {
     if (imagem == null) return;
 
-    try {
-      final data = await lerDataFoto(imagem);
-      final overlay = montarOverlay(data);
+    final data = await lerDataFoto(imagem);
+    final overlay = montarOverlay(data);
 
-      Uint8List finalBytes = await imagem.readAsBytes();
+    Uint8List finalBytes = await imagem.readAsBytes();
 
-      if (_fonte != null) {
-        finalBytes = OverlayService.desenharOverlay(
-          finalBytes,
-          overlay,
-          _fonte!,
-        );
-      }
+    finalBytes = OverlayService.desenharOverlay(finalBytes, overlay, _fonte!);
 
-      await widget.onImagemGallery(
-        finalBytes,
-        widget.latitude,
-        widget.longitude,
-        widget.altitude,
-        widget.observacoes,
-      );
-    } catch (e) {
-      debugPrint('Erro ao processar imagem da galeria: $e');
-    }
+    await widget.onImagemGallery(
+      finalBytes,
+      widget.latitude,
+      widget.longitude,
+      widget.altitude,
+      widget.observacoes,
+    );
   }
 
   Future<String?> lerDataFoto(File file) async {
@@ -120,17 +114,40 @@ class _GalleryOverlayState extends State<GalleryOverlay> {
     setState(() => _carregando = true);
 
     try {
-      _fonte ??= await OverlayService.carregarFonte();
+      _fonte = await OverlayService.carregarFonte();
+
+      if (_fonte == null) {
+        throw Exception('Não foi possível carregar a fonte do overlay.');
+      }
 
       final XFile? imagem = await ImagePicker().pickImage(
         source: ImageSource.gallery,
       );
 
-      if (imagem == null) return;
+      if (!mounted) return;
+
+      // Usuário cancelou a seleção.
+      if (imagem == null) {
+        Navigator.pop(context);
+        return;
+      }
 
       await salvarFotoFinal(imagem: File(imagem.path));
+
+      // Fecha a tela após salvar.
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       debugPrint('Erro ao selecionar imagem: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao processar imagem: $e')));
+
+        Navigator.pop(context);
+      }
     } finally {
       if (mounted) {
         setState(() => _carregando = false);
